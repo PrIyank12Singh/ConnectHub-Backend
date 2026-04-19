@@ -35,4 +35,7 @@ public interface RoomService {
     MemberResponse updateLastRead(UUID roomId, UUID userId);
 
     int getUnreadCount(UUID roomId, UUID userId, LocalDateTime since);
+
+    // ✅ New — called by message-service when a message is sent
+    RoomResponse updateLastMessageAt(UUID roomId, LocalDateTime timestamp);
 }

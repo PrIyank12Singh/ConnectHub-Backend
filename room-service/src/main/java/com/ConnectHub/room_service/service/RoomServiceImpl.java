@@ -34,7 +34,18 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public RoomResponse createRoom(CreateRoomRequest request) {
-        // For DM rooms ensure max 2 members
+        // ✅ Duplicate DM prevention
+        if (request.getType() == RoomType.DM && request.getRecipientId() != null) {
+            List<Room> existingRooms = roomRepository.findRoomsByUserId(request.getCreatedById());
+            for (Room r : existingRooms) {
+                if (r.getType() == RoomType.DM &&
+                    memberRepository.existsByRoomIdAndUserId(r.getRoomId(), request.getRecipientId())) {
+                    return toRoomResponse(r);
+                }
+            }
+        }
+
+        // For DM rooms ensure max 2 members and private
         if (request.getType() == RoomType.DM) {
             request.setMaxMembers(2);
             request.setIsPrivate(true);
@@ -53,12 +64,21 @@ public class RoomServiceImpl implements RoomService {
 
         Room saved = roomRepository.save(room);
 
-        // Auto-add creator as ADMIN member
+        // Auto-add creator as ADMIN
         RoomMember creatorMember = new RoomMember();
         creatorMember.setRoomId(saved.getRoomId());
         creatorMember.setUserId(request.getCreatedById());
         creatorMember.setRole(MemberRole.ADMIN);
         memberRepository.save(creatorMember);
+
+        // ✅ Auto-add recipient for DM — fixes memberCount: 1 issue
+        if (request.getType() == RoomType.DM && request.getRecipientId() != null) {
+            RoomMember recipientMember = new RoomMember();
+            recipientMember.setRoomId(saved.getRoomId());
+            recipientMember.setUserId(request.getRecipientId());
+            recipientMember.setRole(MemberRole.MEMBER);
+            memberRepository.save(recipientMember);
+        }
 
         return toRoomResponse(saved);
     }
@@ -181,14 +201,16 @@ public class RoomServiceImpl implements RoomService {
     @Transactional(readOnly = true)
     public int getUnreadCount(UUID roomId, UUID userId, LocalDateTime since) {
         findRoom(roomId);
-        RoomMember member = findMember(roomId, userId);
-        LocalDateTime lastRead = member.getLastReadAt();
-        if (lastRead == null) {
-            return 0;
-        }
-        // Count messages after lastReadAt — message service handles this,
-        // here we return the stored lastReadAt for the client to compute
+        findMember(roomId, userId);
+        // TODO: wire to message-service once built
         return 0;
+    }
+
+    @Override
+    public RoomResponse updateLastMessageAt(UUID roomId, LocalDateTime timestamp) {
+        Room room = findRoom(roomId);
+        room.setLastMessageAt(timestamp);
+        return toRoomResponse(roomRepository.save(room));
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

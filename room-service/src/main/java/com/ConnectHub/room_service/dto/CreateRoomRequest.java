@@ -25,6 +25,7 @@ public class CreateRoomRequest {
     @NotNull
     private UUID createdById;
 
+    private UUID recipientId;
     private String avatarUrl;
 
     private Boolean isPrivate;
