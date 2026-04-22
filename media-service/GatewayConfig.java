@@ -49,18 +49,11 @@ public class GatewayConfig {
                         .filters(f -> f.filter(jwtAuthFilter.apply(new JwtAuthFilter.Config())))
                         .uri("http://localhost:8083"))
 
-                // ─── Media Service (upload needs JWT) ────────────────────────
-                .route("media-upload", r -> r
-                        .path("/media/upload", "/media/upload/image")
-                        .filters(f -> f.filter(jwtAuthFilter.apply(new JwtAuthFilter.Config())))
-                        .uri("http://localhost:8084"))
-
-                // ─── Media Service (serve files publicly) ────────────────────
+                // ─── Media Service (serve files publicly, upload needs JWT) ──
                 .route("media-files-public", r -> r
                         .path("/media/files/**", "/media/thumbnails/**")
                         .uri("http://localhost:8084"))
 
-                // ─── Media Service (other protected routes) ──────────────────
                 .route("media-service", r -> r
                         .path("/media/**")
                         .filters(f -> f.filter(jwtAuthFilter.apply(new JwtAuthFilter.Config())))
