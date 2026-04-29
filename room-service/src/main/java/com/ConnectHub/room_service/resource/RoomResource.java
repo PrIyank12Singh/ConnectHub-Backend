@@ -124,11 +124,47 @@ public class RoomResource {
         return ResponseEntity.ok(Map.of("roomId", roomId, "userId", userId, "unreadCount", count));
     }
 
-    // ✅ Called by message-service when a new message is sent
+    // Called by message-service when a new message is sent
     @PatchMapping("/{roomId}/last-message")
     public ResponseEntity<RoomResponse> updateLastMessageAt(
             @PathVariable UUID roomId,
             @RequestParam LocalDateTime timestamp) {
         return ResponseEntity.ok(roomService.updateLastMessageAt(roomId, timestamp));
     }
+
+    // ─── GAP 10 FIX: Pin / Unpin ─────────────────────────────────────────────
+
+    /**
+     * POST /rooms/{roomId}/pin/{messageId}
+     *
+     * Pins the given message to the top of the room.
+     * Called by website-controller's RoomManagerController when a Room Admin
+     * clicks the pin button.
+     *
+     * Returns the updated RoomResponse (pinnedMessageId will be set).
+     */
+    @PostMapping("/{roomId}/pin/{messageId}")
+    public ResponseEntity<RoomResponse> pinMessage(
+            @PathVariable UUID roomId,
+            @PathVariable String messageId) {
+        return ResponseEntity.ok(roomService.pinMessage(roomId, messageId));
+    }
+
+    /**
+     * DELETE /rooms/{roomId}/pin/{messageId}
+     *
+     * Removes the pinned message from the room.
+     * The {messageId} path variable is accepted for symmetry with the POST
+     * but is not used — only one message can be pinned per room.
+     *
+     * Returns the updated RoomResponse (pinnedMessageId will be null).
+     */
+    @DeleteMapping("/{roomId}/pin/{messageId}")
+    public ResponseEntity<RoomResponse> unpinMessage(
+            @PathVariable UUID roomId,
+            @PathVariable String messageId) {
+        return ResponseEntity.ok(roomService.unpinMessage(roomId));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
 }

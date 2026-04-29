@@ -24,4 +24,12 @@ public class RoomResponse {
     private LocalDateTime lastMessageAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // ─── GAP 10 FIX ───────────────────────────────────────────────────────────
+    /**
+     * UUID of the currently pinned message, or null if nothing is pinned.
+     * Returned to the frontend so it can render the pinned message banner.
+     */
+    private String pinnedMessageId;
+    // ─────────────────────────────────────────────────────────────────────────
 }

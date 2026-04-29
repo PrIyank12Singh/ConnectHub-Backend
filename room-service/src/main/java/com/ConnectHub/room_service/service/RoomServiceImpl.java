@@ -5,6 +5,7 @@ import com.ConnectHub.room_service.dto.CreateRoomRequest;
 import com.ConnectHub.room_service.dto.MemberResponse;
 import com.ConnectHub.room_service.dto.RoomResponse;
 import com.ConnectHub.room_service.dto.UpdateRoomRequest;
+import com.ConnectHub.room_service.client.MessageServiceClient;
 import com.ConnectHub.room_service.model.MemberRole;
 import com.ConnectHub.room_service.model.Room;
 import com.ConnectHub.room_service.model.RoomMember;
@@ -25,16 +26,19 @@ public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
     private final RoomMemberRepository memberRepository;
+    private final MessageServiceClient messageServiceClient;
 
     public RoomServiceImpl(RoomRepository roomRepository,
-                           RoomMemberRepository memberRepository) {
+                           RoomMemberRepository memberRepository,
+                           MessageServiceClient messageServiceClient) {
         this.roomRepository = roomRepository;
         this.memberRepository = memberRepository;
+        this.messageServiceClient = messageServiceClient;
     }
 
     @Override
     public RoomResponse createRoom(CreateRoomRequest request) {
-        // ✅ Duplicate DM prevention
+        // Duplicate DM prevention
         if (request.getType() == RoomType.DM && request.getRecipientId() != null) {
             List<Room> existingRooms = roomRepository.findRoomsByUserId(request.getCreatedById());
             for (Room r : existingRooms) {
@@ -45,7 +49,6 @@ public class RoomServiceImpl implements RoomService {
             }
         }
 
-        // For DM rooms ensure max 2 members and private
         if (request.getType() == RoomType.DM) {
             request.setMaxMembers(2);
             request.setIsPrivate(true);
@@ -71,7 +74,7 @@ public class RoomServiceImpl implements RoomService {
         creatorMember.setRole(MemberRole.ADMIN);
         memberRepository.save(creatorMember);
 
-        // ✅ Auto-add recipient for DM — fixes memberCount: 1 issue
+        // Auto-add recipient for DM
         if (request.getType() == RoomType.DM && request.getRecipientId() != null) {
             RoomMember recipientMember = new RoomMember();
             recipientMember.setRoomId(saved.getRoomId());
@@ -86,8 +89,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional(readOnly = true)
     public RoomResponse getRoomById(UUID roomId) {
-        Room room = findRoom(roomId);
-        return toRoomResponse(room);
+        return toRoomResponse(findRoom(roomId));
     }
 
     @Override
@@ -202,8 +204,7 @@ public class RoomServiceImpl implements RoomService {
     public int getUnreadCount(UUID roomId, UUID userId, LocalDateTime since) {
         findRoom(roomId);
         findMember(roomId, userId);
-        // TODO: wire to message-service once built
-        return 0;
+        return (int) messageServiceClient.getUnreadCount(roomId.toString(), since);
     }
 
     @Override
@@ -212,6 +213,28 @@ public class RoomServiceImpl implements RoomService {
         room.setLastMessageAt(timestamp);
         return toRoomResponse(roomRepository.save(room));
     }
+
+    // ─── GAP 10 FIX ───────────────────────────────────────────────────────────
+
+    @Override
+    public RoomResponse pinMessage(UUID roomId, String messageId) {
+        if (messageId == null || messageId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "messageId must not be blank");
+        }
+        Room room = findRoom(roomId);
+        room.setPinnedMessageId(messageId);
+        return toRoomResponse(roomRepository.save(room));
+    }
+
+    @Override
+    public RoomResponse unpinMessage(UUID roomId) {
+        Room room = findRoom(roomId);
+        room.setPinnedMessageId(null);
+        return toRoomResponse(roomRepository.save(room));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -242,6 +265,8 @@ public class RoomServiceImpl implements RoomService {
                 .lastMessageAt(room.getLastMessageAt())
                 .createdAt(room.getCreatedAt())
                 .updatedAt(room.getUpdatedAt())
+                // GAP 10 FIX: expose pinnedMessageId in every room response
+                .pinnedMessageId(room.getPinnedMessageId())
                 .build();
     }
 

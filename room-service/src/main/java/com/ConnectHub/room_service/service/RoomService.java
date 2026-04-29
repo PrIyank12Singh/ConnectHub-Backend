@@ -36,6 +36,27 @@ public interface RoomService {
 
     int getUnreadCount(UUID roomId, UUID userId, LocalDateTime since);
 
-    // ✅ New — called by message-service when a message is sent
+    // Called by message-service when a new message is sent
     RoomResponse updateLastMessageAt(UUID roomId, LocalDateTime timestamp);
+
+    // ─── GAP 10 FIX ───────────────────────────────────────────────────────────
+    /**
+     * Pin a message to the top of the room.
+     * Overwrites any previously pinned message.
+     *
+     * @param roomId    UUID of the target room
+     * @param messageId UUID string of the message to pin
+     * @return updated RoomResponse with pinnedMessageId set
+     */
+    RoomResponse pinMessage(UUID roomId, String messageId);
+
+    /**
+     * Remove the pinned message from a room.
+     * No-ops silently if nothing was pinned.
+     *
+     * @param roomId UUID of the target room
+     * @return updated RoomResponse with pinnedMessageId set to null
+     */
+    RoomResponse unpinMessage(UUID roomId);
+    // ─────────────────────────────────────────────────────────────────────────
 }

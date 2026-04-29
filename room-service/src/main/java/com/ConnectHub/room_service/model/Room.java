@@ -26,7 +26,7 @@ public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(name = "room_id", nullable = false, updatable = false,length = 36)
+    @Column(name = "room_id", nullable = false, updatable = false, length = 36)
     private UUID roomId;
 
     @Column(nullable = false, length = 100)
@@ -52,6 +52,16 @@ public class Room {
     private Integer maxMembers;
 
     private LocalDateTime lastMessageAt;
+
+    // ─── GAP 10 FIX ───────────────────────────────────────────────────────────
+    /**
+     * UUID of the message currently pinned to the top of this room.
+     * Null when no message is pinned.
+     * Set/cleared via POST|DELETE /rooms/{roomId}/pin/{messageId}
+     */
+    @Column(length = 36)
+    private String pinnedMessageId;
+    // ─────────────────────────────────────────────────────────────────────────
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
