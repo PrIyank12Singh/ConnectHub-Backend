@@ -1,7 +1,7 @@
-package com.ConnectHub.media_service.repository;
+package com.connecthub.media_service.repository;
 
-import com.ConnectHub.media_service.model.MediaFile;
-import com.ConnectHub.media_service.model.MediaType;
+import com.connecthub.media_service.model.MediaFile;
+import com.connecthub.media_service.model.MediaType;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,3 +23,5 @@ public interface MediaRepository extends JpaRepository<MediaFile, UUID> {
 
     void deleteByMediaId(UUID mediaId);
 }
+
+

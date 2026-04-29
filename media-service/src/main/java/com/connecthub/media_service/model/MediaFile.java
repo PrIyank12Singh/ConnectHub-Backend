@@ -1,4 +1,4 @@
-package com.ConnectHub.media_service.model;
+package com.connecthub.media_service.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -73,3 +73,5 @@ public class MediaFile {
         this.uploadedAt = LocalDateTime.now();
     }
 }
+
+

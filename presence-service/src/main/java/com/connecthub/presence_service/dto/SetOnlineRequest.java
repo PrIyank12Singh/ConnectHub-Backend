@@ -1,4 +1,4 @@
-package com.ConnectHub.presence_service.dto;
+package com.connecthub.presence_service.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -17,3 +17,5 @@ public class SetOnlineRequest {
 
     private String ipAddress;
 }
+
+

@@ -1,6 +1,6 @@
-package com.ConnectHub.presence_service.dto;
+package com.connecthub.presence_service.dto;
 
-import com.ConnectHub.presence_service.model.UserStatus;
+import com.connecthub.presence_service.model.UserStatus;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,3 +22,5 @@ public class PresenceResponse {
     private LocalDateTime lastPingAt;
     private String sessionId;
 }
+
+

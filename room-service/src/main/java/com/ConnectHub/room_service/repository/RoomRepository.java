@@ -1,7 +1,7 @@
-package com.ConnectHub.room_service.repository;
+package com.connecthub.room_service.repository;
 
-import com.ConnectHub.room_service.model.Room;
-import com.ConnectHub.room_service.model.RoomType;
+import com.connecthub.room_service.model.Room;
+import com.connecthub.room_service.model.RoomType;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,3 +22,5 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
 
     void deleteByRoomId(UUID roomId);
 }
+
+

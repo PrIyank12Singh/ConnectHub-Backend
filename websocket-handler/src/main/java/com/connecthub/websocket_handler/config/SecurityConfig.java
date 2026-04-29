@@ -1,4 +1,4 @@
-package com.ConnectHub.websocket_handler.config;
+package com.connecthub.websocket_handler.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,3 +19,5 @@ public class SecurityConfig {
         return http.build();
     }
 }
+
+

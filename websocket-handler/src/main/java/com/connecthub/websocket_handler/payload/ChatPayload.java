@@ -1,4 +1,4 @@
-package com.ConnectHub.websocket_handler.payload;
+package com.connecthub.websocket_handler.payload;
 
 import lombok.Data;
 
@@ -72,3 +72,5 @@ public class ChatPayload {
     // ── PING fields ──────────────────────────────────────────────
     private String sessionId;
 }
+
+

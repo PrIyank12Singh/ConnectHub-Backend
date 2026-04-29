@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.ConnectHub</groupId>
+    <groupId>com.connecthub</groupId>
     <artifactId>websocket-handler</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>websocket-handler</name>
@@ -21,6 +21,7 @@
         <java.version>17</java.version>
         <jjwt.version>0.12.6</jjwt.version>
         <spring-cloud.version>2023.0.1</spring-cloud.version>
+        <springdoc.version>2.5.0</springdoc.version>
     </properties>
 
     <dependencies>
@@ -108,6 +109,12 @@
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>
@@ -153,3 +160,5 @@
     </build>
 
 </project>
+
+

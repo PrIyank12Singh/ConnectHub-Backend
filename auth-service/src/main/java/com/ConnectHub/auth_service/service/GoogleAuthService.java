@@ -1,12 +1,12 @@
-package com.ConnectHub.auth_service.service;
+package com.connecthub.auth_service.service;
 
-import com.ConnectHub.auth_service.dto.AuthResponse;
-import com.ConnectHub.auth_service.model.AuthProvider;
-import com.ConnectHub.auth_service.model.User;
-import com.ConnectHub.auth_service.model.UserRole;
-import com.ConnectHub.auth_service.model.UserStatus;
-import com.ConnectHub.auth_service.repository.UserRepository;
-import com.ConnectHub.auth_service.security.JwtUtil;
+import com.connecthub.auth_service.dto.AuthResponse;
+import com.connecthub.auth_service.model.AuthProvider;
+import com.connecthub.auth_service.model.User;
+import com.connecthub.auth_service.model.UserRole;
+import com.connecthub.auth_service.model.UserStatus;
+import com.connecthub.auth_service.repository.UserRepository;
+import com.connecthub.auth_service.security.JwtUtil;
 import java.time.LocalDateTime;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -73,3 +73,5 @@ public class GoogleAuthService {
                 .build();
     }
 }
+
+

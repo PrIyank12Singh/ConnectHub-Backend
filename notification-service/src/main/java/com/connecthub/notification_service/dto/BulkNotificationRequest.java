@@ -1,6 +1,6 @@
-package com.ConnectHub.notification_service.dto;
+package com.connecthub.notification_service.dto;
 
-import com.ConnectHub.notification_service.model.NotificationType;
+import com.connecthub.notification_service.model.NotificationType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -28,3 +28,5 @@ public class BulkNotificationRequest {
     private String roomId;
     private String messageId;
 }
+
+

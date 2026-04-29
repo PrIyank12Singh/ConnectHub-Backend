@@ -1,4 +1,4 @@
-package com.ConnectHub.presence_service.model;
+package com.connecthub.presence_service.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -94,3 +94,5 @@ public class UserPresence {
         this.updatedAt = LocalDateTime.now();
     }
 }
+
+

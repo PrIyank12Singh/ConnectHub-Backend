@@ -1,6 +1,6 @@
-package com.ConnectHub.notification_service.dto;
+package com.connecthub.notification_service.dto;
 
-import com.ConnectHub.notification_service.model.NotificationType;
+import com.connecthub.notification_service.model.NotificationType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,3 +24,5 @@ public class NotificationResponse {
     private Boolean isRead;
     private LocalDateTime createdAt;
 }
+
+

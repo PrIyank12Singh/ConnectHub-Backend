@@ -1,4 +1,4 @@
-package com.ConnectHub.auth_service.dto;
+package com.connecthub.auth_service.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -27,3 +27,5 @@ public class RegisterRequest {
     @Size(min = 2, max = 120)
     private String fullName;
 }
+
+

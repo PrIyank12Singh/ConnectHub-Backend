@@ -1,4 +1,4 @@
-package com.ConnectHub.notification_service.config;
+package com.connecthub.notification_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,9 +14,11 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // Gateway handles JWT — service trusts all internal traffic
-                        .requestMatchers("/notifications/**", "/error").permitAll()
+                        .requestMatchers("/notifications/**", "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated());
 
         return http.build();
     }
 }
+
+

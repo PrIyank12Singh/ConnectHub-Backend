@@ -1,17 +1,17 @@
-package com.ConnectHub.room_service.service;
+package com.connecthub.room_service.service;
 
-import com.ConnectHub.room_service.dto.AddMemberRequest;
-import com.ConnectHub.room_service.dto.CreateRoomRequest;
-import com.ConnectHub.room_service.dto.MemberResponse;
-import com.ConnectHub.room_service.dto.RoomResponse;
-import com.ConnectHub.room_service.dto.UpdateRoomRequest;
-import com.ConnectHub.room_service.client.MessageServiceClient;
-import com.ConnectHub.room_service.model.MemberRole;
-import com.ConnectHub.room_service.model.Room;
-import com.ConnectHub.room_service.model.RoomMember;
-import com.ConnectHub.room_service.model.RoomType;
-import com.ConnectHub.room_service.repository.RoomMemberRepository;
-import com.ConnectHub.room_service.repository.RoomRepository;
+import com.connecthub.room_service.dto.AddMemberRequest;
+import com.connecthub.room_service.dto.CreateRoomRequest;
+import com.connecthub.room_service.dto.MemberResponse;
+import com.connecthub.room_service.dto.RoomResponse;
+import com.connecthub.room_service.dto.UpdateRoomRequest;
+import com.connecthub.room_service.client.MessageServiceClient;
+import com.connecthub.room_service.model.MemberRole;
+import com.connecthub.room_service.model.Room;
+import com.connecthub.room_service.model.RoomMember;
+import com.connecthub.room_service.model.RoomType;
+import com.connecthub.room_service.repository.RoomMemberRepository;
+import com.connecthub.room_service.repository.RoomRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -282,3 +282,5 @@ public class RoomServiceImpl implements RoomService {
                 .build();
     }
 }
+
+

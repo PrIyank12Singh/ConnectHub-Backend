@@ -1,4 +1,4 @@
-package com.ConnectHub.websocket_handler.config;
+package com.connecthub.websocket_handler.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -38,3 +38,5 @@ public class JwtUtil {
                 .getPayload();
     }
 }
+
+

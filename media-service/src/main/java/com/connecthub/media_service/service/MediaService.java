@@ -1,6 +1,6 @@
-package com.ConnectHub.media_service.service;
+package com.connecthub.media_service.service;
 
-import com.ConnectHub.media_service.dto.MediaResponse;
+import com.connecthub.media_service.dto.MediaResponse;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,3 +27,5 @@ public interface MediaService {
 
     List<MediaResponse> getAllFiles();
 }
+
+

@@ -1,4 +1,4 @@
-package com.ConnectHub.presence_service.model;
+package com.connecthub.presence_service.model;
 
 public enum UserStatus {
     ONLINE,
@@ -6,3 +6,5 @@ public enum UserStatus {
     DND,        // Do Not Disturb
     INVISIBLE   // appears offline to others
 }
+
+

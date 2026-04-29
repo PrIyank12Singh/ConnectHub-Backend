@@ -1,4 +1,4 @@
-package com.ConnectHub.media_service.model;
+package com.connecthub.media_service.model;
 
 public enum MediaType {
     IMAGE,
@@ -6,3 +6,5 @@ public enum MediaType {
     VIDEO,
     AUDIO
 }
+
+

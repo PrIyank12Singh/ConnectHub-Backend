@@ -1,4 +1,4 @@
-package com.ConnectHub.auth_service.dto;
+package com.connecthub.auth_service.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -19,3 +19,5 @@ public class UpdateProfileRequest {
     @Size(max = 400)
     private String bio;
 }
+
+

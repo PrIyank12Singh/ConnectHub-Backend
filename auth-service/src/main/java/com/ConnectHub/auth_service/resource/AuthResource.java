@@ -1,14 +1,14 @@
-package com.ConnectHub.auth_service.resource;
+package com.connecthub.auth_service.resource;
 
-import com.ConnectHub.auth_service.dto.AuthResponse;
-import com.ConnectHub.auth_service.dto.ChangePasswordRequest;
-import com.ConnectHub.auth_service.dto.LoginRequest;
-import com.ConnectHub.auth_service.dto.RegisterRequest;
-import com.ConnectHub.auth_service.dto.UpdateProfileRequest;
-import com.ConnectHub.auth_service.dto.UserResponse;
-import com.ConnectHub.auth_service.model.UserStatus;
-import com.ConnectHub.auth_service.service.AuthService;
-import com.ConnectHub.auth_service.service.GoogleAuthService;
+import com.connecthub.auth_service.dto.AuthResponse;
+import com.connecthub.auth_service.dto.ChangePasswordRequest;
+import com.connecthub.auth_service.dto.LoginRequest;
+import com.connecthub.auth_service.dto.RegisterRequest;
+import com.connecthub.auth_service.dto.UpdateProfileRequest;
+import com.connecthub.auth_service.dto.UserResponse;
+import com.connecthub.auth_service.model.UserStatus;
+import com.connecthub.auth_service.service.AuthService;
+import com.connecthub.auth_service.service.GoogleAuthService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -130,3 +130,5 @@ public class AuthResource {
         return authHeader;
     }
 }
+
+

@@ -1,6 +1,6 @@
-package com.ConnectHub.auth_service.dto;
+package com.connecthub.auth_service.dto;
 
-import com.ConnectHub.auth_service.model.UserRole;
+import com.connecthub.auth_service.model.UserRole;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -18,3 +18,5 @@ public class AuthResponse {
     private String tokenType;
     private LocalDateTime issuedAt;
 }
+
+

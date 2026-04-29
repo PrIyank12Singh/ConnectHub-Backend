@@ -1,6 +1,6 @@
-package com.ConnectHub.api_gateway.config;
+package com.connecthub.api_gateway.config;
 
-import com.ConnectHub.api_gateway.filter.JwtAuthFilter;
+import com.connecthub.api_gateway.filter.JwtAuthFilter;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
@@ -78,3 +78,5 @@ public class GatewayConfig {
         return new CorsWebFilter(source);
     }
 }
+
+

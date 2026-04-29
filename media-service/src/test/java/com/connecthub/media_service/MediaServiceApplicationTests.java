@@ -1,4 +1,4 @@
-package com.ConnectHub.media_service;
+package com.connecthub.media_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,3 +10,5 @@ class MediaServiceApplicationTests {
     void contextLoads() {
     }
 }
+
+

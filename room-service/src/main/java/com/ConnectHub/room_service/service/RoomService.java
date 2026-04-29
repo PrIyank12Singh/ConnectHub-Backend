@@ -1,11 +1,11 @@
-package com.ConnectHub.room_service.service;
+package com.connecthub.room_service.service;
 
-import com.ConnectHub.room_service.dto.AddMemberRequest;
-import com.ConnectHub.room_service.dto.CreateRoomRequest;
-import com.ConnectHub.room_service.dto.MemberResponse;
-import com.ConnectHub.room_service.dto.RoomResponse;
-import com.ConnectHub.room_service.dto.UpdateRoomRequest;
-import com.ConnectHub.room_service.model.MemberRole;
+import com.connecthub.room_service.dto.AddMemberRequest;
+import com.connecthub.room_service.dto.CreateRoomRequest;
+import com.connecthub.room_service.dto.MemberResponse;
+import com.connecthub.room_service.dto.RoomResponse;
+import com.connecthub.room_service.dto.UpdateRoomRequest;
+import com.connecthub.room_service.model.MemberRole;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -60,3 +60,5 @@ public interface RoomService {
     RoomResponse unpinMessage(UUID roomId);
     // ─────────────────────────────────────────────────────────────────────────
 }
+
+

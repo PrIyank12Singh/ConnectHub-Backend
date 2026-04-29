@@ -1,8 +1,8 @@
-package com.ConnectHub.auth_service.dto;
+package com.connecthub.auth_service.dto;
 
-import com.ConnectHub.auth_service.model.AuthProvider;
-import com.ConnectHub.auth_service.model.UserRole;
-import com.ConnectHub.auth_service.model.UserStatus;
+import com.connecthub.auth_service.model.AuthProvider;
+import com.connecthub.auth_service.model.UserRole;
+import com.connecthub.auth_service.model.UserStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -25,3 +25,5 @@ public class UserResponse {
     private LocalDateTime lastSeenAt;
     private LocalDateTime createdAt;
 }
+
+

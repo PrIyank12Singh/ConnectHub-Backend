@@ -1,9 +1,9 @@
-package com.ConnectHub.media_service.service;
+package com.connecthub.media_service.service;
 
-import com.ConnectHub.media_service.dto.MediaResponse;
-import com.ConnectHub.media_service.model.MediaFile;
-import com.ConnectHub.media_service.model.MediaType;
-import com.ConnectHub.media_service.repository.MediaRepository;
+import com.connecthub.media_service.dto.MediaResponse;
+import com.connecthub.media_service.model.MediaFile;
+import com.connecthub.media_service.model.MediaType;
+import com.connecthub.media_service.repository.MediaRepository;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -234,3 +234,5 @@ public class MediaServiceImpl implements MediaService {
                 .build();
     }
 }
+
+

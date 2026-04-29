@@ -1,4 +1,4 @@
-package com.ConnectHub.notification_service.model;
+package com.connecthub.notification_service.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -74,3 +74,5 @@ public class Notification {
         }
     }
 }
+
+

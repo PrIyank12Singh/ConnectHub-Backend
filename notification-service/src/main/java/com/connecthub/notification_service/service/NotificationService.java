@@ -1,9 +1,9 @@
-package com.ConnectHub.notification_service.service;
+package com.connecthub.notification_service.service;
 
-import com.ConnectHub.notification_service.dto.BulkNotificationRequest;
-import com.ConnectHub.notification_service.dto.EmailNotificationRequest;
-import com.ConnectHub.notification_service.dto.NotificationResponse;
-import com.ConnectHub.notification_service.dto.SendNotificationRequest;
+import com.connecthub.notification_service.dto.BulkNotificationRequest;
+import com.connecthub.notification_service.dto.EmailNotificationRequest;
+import com.connecthub.notification_service.dto.NotificationResponse;
+import com.connecthub.notification_service.dto.SendNotificationRequest;
 import java.util.List;
 
 public interface NotificationService {
@@ -38,3 +38,5 @@ public interface NotificationService {
     /** Get all notifications (admin use) */
     List<NotificationResponse> getAll();
 }
+
+

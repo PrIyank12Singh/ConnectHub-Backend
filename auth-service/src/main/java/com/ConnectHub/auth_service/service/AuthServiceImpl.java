@@ -1,16 +1,16 @@
-package com.ConnectHub.auth_service.service;
+package com.connecthub.auth_service.service;
 
-import com.ConnectHub.auth_service.dto.AuthResponse;
-import com.ConnectHub.auth_service.dto.ChangePasswordRequest;
-import com.ConnectHub.auth_service.dto.LoginRequest;
-import com.ConnectHub.auth_service.dto.RegisterRequest;
-import com.ConnectHub.auth_service.dto.UpdateProfileRequest;
-import com.ConnectHub.auth_service.dto.UserResponse;
-import com.ConnectHub.auth_service.model.AuthProvider;
-import com.ConnectHub.auth_service.model.User;
-import com.ConnectHub.auth_service.model.UserStatus;
-import com.ConnectHub.auth_service.repository.UserRepository;
-import com.ConnectHub.auth_service.security.JwtUtil;
+import com.connecthub.auth_service.dto.AuthResponse;
+import com.connecthub.auth_service.dto.ChangePasswordRequest;
+import com.connecthub.auth_service.dto.LoginRequest;
+import com.connecthub.auth_service.dto.RegisterRequest;
+import com.connecthub.auth_service.dto.UpdateProfileRequest;
+import com.connecthub.auth_service.dto.UserResponse;
+import com.connecthub.auth_service.model.AuthProvider;
+import com.connecthub.auth_service.model.User;
+import com.connecthub.auth_service.model.UserStatus;
+import com.connecthub.auth_service.repository.UserRepository;
+import com.connecthub.auth_service.security.JwtUtil;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -224,3 +224,5 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 }
+
+

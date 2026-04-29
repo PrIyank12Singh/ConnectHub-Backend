@@ -12,7 +12,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.ConnectHub</groupId>
+    <groupId>com.connecthub</groupId>
     <artifactId>notification-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>notification-service</name>
@@ -22,6 +22,7 @@
         <java.version>17</java.version>
         <jjwt.version>0.12.6</jjwt.version>
         <spring-cloud.version>2023.0.1</spring-cloud.version>
+        <springdoc.version>2.5.0</springdoc.version>
     </properties>
 
     <dependencies>
@@ -90,6 +91,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -125,3 +132,4 @@
     </build>
 
 </project>
+

@@ -1,4 +1,4 @@
-package com.ConnectHub.websocket_handler.config;
+package com.connecthub.websocket_handler.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -134,3 +134,5 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         return scheduler;
     }
 }
+
+

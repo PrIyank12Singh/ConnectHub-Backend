@@ -1,13 +1,13 @@
-package com.ConnectHub.notification_service.service;
+package com.connecthub.notification_service.service;
 
-import com.ConnectHub.notification_service.client.PresenceClient;
-import com.ConnectHub.notification_service.dto.BulkNotificationRequest;
-import com.ConnectHub.notification_service.dto.EmailNotificationRequest;
-import com.ConnectHub.notification_service.dto.NotificationResponse;
-import com.ConnectHub.notification_service.dto.SendNotificationRequest;
-import com.ConnectHub.notification_service.model.Notification;
-import com.ConnectHub.notification_service.model.NotificationType;
-import com.ConnectHub.notification_service.repository.NotificationRepository;
+import com.connecthub.notification_service.client.PresenceClient;
+import com.connecthub.notification_service.dto.BulkNotificationRequest;
+import com.connecthub.notification_service.dto.EmailNotificationRequest;
+import com.connecthub.notification_service.dto.NotificationResponse;
+import com.connecthub.notification_service.dto.SendNotificationRequest;
+import com.connecthub.notification_service.model.Notification;
+import com.connecthub.notification_service.model.NotificationType;
+import com.connecthub.notification_service.repository.NotificationRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -252,3 +252,5 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
     }
 }
+
+

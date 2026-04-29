@@ -1,12 +1,12 @@
-package com.ConnectHub.presence_service.service;
+package com.connecthub.presence_service.service;
 
-import com.ConnectHub.presence_service.dto.BulkPresenceRequest;
-import com.ConnectHub.presence_service.dto.PresenceResponse;
-import com.ConnectHub.presence_service.dto.SetOnlineRequest;
-import com.ConnectHub.presence_service.dto.UpdateStatusRequest;
-import com.ConnectHub.presence_service.model.UserPresence;
-import com.ConnectHub.presence_service.model.UserStatus;
-import com.ConnectHub.presence_service.repository.PresenceRepository;
+import com.connecthub.presence_service.dto.BulkPresenceRequest;
+import com.connecthub.presence_service.dto.PresenceResponse;
+import com.connecthub.presence_service.dto.SetOnlineRequest;
+import com.connecthub.presence_service.dto.UpdateStatusRequest;
+import com.connecthub.presence_service.model.UserPresence;
+import com.connecthub.presence_service.model.UserStatus;
+import com.connecthub.presence_service.repository.PresenceRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -211,3 +211,5 @@ public class PresenceServiceImpl implements PresenceService {
                 .build();
     }
 }
+
+

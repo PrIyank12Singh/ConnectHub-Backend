@@ -1,4 +1,4 @@
-package com.ConnectHub.websocket_handler.client;
+package com.connecthub.websocket_handler.client;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -77,3 +77,5 @@ public class MessageServiceClient {
         }
     }
 }
+
+

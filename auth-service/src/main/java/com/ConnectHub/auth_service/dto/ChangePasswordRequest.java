@@ -1,4 +1,4 @@
-package com.ConnectHub.auth_service.dto;
+package com.connecthub.auth_service.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -16,3 +16,5 @@ public class ChangePasswordRequest {
     @Size(min = 8, max = 128)
     private String newPassword;
 }
+
+

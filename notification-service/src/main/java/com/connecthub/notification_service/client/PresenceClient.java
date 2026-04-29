@@ -1,4 +1,4 @@
-package com.ConnectHub.notification_service.client;
+package com.connecthub.notification_service.client;
 
 import java.time.LocalDateTime;
 import org.slf4j.Logger;
@@ -111,3 +111,5 @@ public class PresenceClient {
         public void setLastPingAt(LocalDateTime lastPingAt) { this.lastPingAt = lastPingAt; }
     }
 }
+
+

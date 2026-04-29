@@ -1,4 +1,4 @@
-package com.ConnectHub.websocket_handler.payload;
+package com.connecthub.websocket_handler.payload;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -56,3 +56,5 @@ public class OutboundEvent {
     // ── ROOM_JOIN / ROOM_LEAVE ────────────────────────────────────
     private String username;
 }
+
+

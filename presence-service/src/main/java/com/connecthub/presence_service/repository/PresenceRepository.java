@@ -1,7 +1,7 @@
-package com.ConnectHub.presence_service.repository;
+package com.connecthub.presence_service.repository;
 
-import com.ConnectHub.presence_service.model.UserPresence;
-import com.ConnectHub.presence_service.model.UserStatus;
+import com.connecthub.presence_service.model.UserPresence;
+import com.connecthub.presence_service.model.UserStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -61,3 +61,5 @@ public interface PresenceRepository extends JpaRepository<UserPresence, Long> {
     @Query("DELETE FROM UserPresence p WHERE p.lastPingAt < :cutoff")
     int deleteStaleSessionsBefore(@Param("cutoff") LocalDateTime cutoff);
 }
+
+

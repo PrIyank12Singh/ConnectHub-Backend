@@ -1,4 +1,4 @@
-package com.ConnectHub.room_service;
+package com.connecthub.room_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,3 +11,5 @@ class RoomServiceApplicationTests {
 	}
 
 }
+
+

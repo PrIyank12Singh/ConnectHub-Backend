@@ -1,7 +1,7 @@
-package com.ConnectHub.notification_service.repository;
+package com.connecthub.notification_service.repository;
 
-import com.ConnectHub.notification_service.model.Notification;
-import com.ConnectHub.notification_service.model.NotificationType;
+import com.connecthub.notification_service.model.Notification;
+import com.connecthub.notification_service.model.NotificationType;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -51,3 +51,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("DELETE FROM Notification n WHERE n.recipientId = :recipientId")
     void deleteAllByRecipient(@Param("recipientId") String recipientId);
 }
+
+

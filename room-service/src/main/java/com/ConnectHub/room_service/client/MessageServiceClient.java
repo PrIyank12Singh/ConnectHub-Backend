@@ -1,4 +1,4 @@
-package com.ConnectHub.room_service.client;
+package com.connecthub.room_service.client;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -27,3 +27,5 @@ public class MessageServiceClient {
         return Long.parseLong(String.valueOf(response.get("unreadCount")));
     }
 }
+
+

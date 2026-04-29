@@ -1,4 +1,4 @@
-package com.ConnectHub.auth_service.security;
+package com.connecthub.auth_service.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -57,3 +57,5 @@ public class JwtUtil {
         return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
     }
 }
+
+

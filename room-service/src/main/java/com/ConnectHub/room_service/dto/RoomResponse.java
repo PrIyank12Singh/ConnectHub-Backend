@@ -1,6 +1,6 @@
-package com.ConnectHub.room_service.dto;
+package com.connecthub.room_service.dto;
 
-import com.ConnectHub.room_service.model.RoomType;
+import com.connecthub.room_service.model.RoomType;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -33,3 +33,5 @@ public class RoomResponse {
     private String pinnedMessageId;
     // ─────────────────────────────────────────────────────────────────────────
 }
+
+

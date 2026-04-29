@@ -1,4 +1,4 @@
-package com.ConnectHub.room_service;
+package com.connecthub.room_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,3 +11,5 @@ public class RoomServiceApplication {
 	}
 
 }
+
+

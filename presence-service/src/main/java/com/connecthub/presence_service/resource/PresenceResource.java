@@ -1,10 +1,10 @@
-package com.ConnectHub.presence_service.resource;
+package com.connecthub.presence_service.resource;
 
-import com.ConnectHub.presence_service.dto.BulkPresenceRequest;
-import com.ConnectHub.presence_service.dto.PresenceResponse;
-import com.ConnectHub.presence_service.dto.SetOnlineRequest;
-import com.ConnectHub.presence_service.dto.UpdateStatusRequest;
-import com.ConnectHub.presence_service.service.PresenceService;
+import com.connecthub.presence_service.dto.BulkPresenceRequest;
+import com.connecthub.presence_service.dto.PresenceResponse;
+import com.connecthub.presence_service.dto.SetOnlineRequest;
+import com.connecthub.presence_service.dto.UpdateStatusRequest;
+import com.connecthub.presence_service.service.PresenceService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -150,3 +150,5 @@ public class PresenceResource {
         return ResponseEntity.ok(Map.of("message", "Stale session cleanup triggered"));
     }
 }
+
+

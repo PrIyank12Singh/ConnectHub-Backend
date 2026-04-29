@@ -1,6 +1,6 @@
-package com.ConnectHub.notification_service.dto;
+package com.connecthub.notification_service.dto;
 
-import com.ConnectHub.notification_service.model.NotificationType;
+import com.connecthub.notification_service.model.NotificationType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -29,3 +29,5 @@ public class SendNotificationRequest {
     /** Optional — message context */
     private String messageId;
 }
+
+

@@ -1,6 +1,6 @@
-package com.ConnectHub.media_service.dto;
+package com.connecthub.media_service.dto;
 
-import com.ConnectHub.media_service.model.MediaType;
+import com.connecthub.media_service.model.MediaType;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -27,3 +27,5 @@ public class MediaResponse {
     private Integer height;
     private LocalDateTime uploadedAt;
 }
+
+

@@ -1,4 +1,4 @@
-package com.ConnectHub.api_gateway;
+package com.connecthub.api_gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,3 +10,5 @@ class ApiGatewayApplicationTests {
     void contextLoads() {
     }
 }
+
+

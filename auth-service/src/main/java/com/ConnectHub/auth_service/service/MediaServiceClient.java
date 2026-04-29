@@ -1,6 +1,6 @@
-package com.ConnectHub.auth_service.service;
+package com.connecthub.auth_service.service;
 
-import com.ConnectHub.auth_service.dto.UserResponse;
+import com.connecthub.auth_service.dto.UserResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
@@ -72,3 +72,4 @@ public class MediaServiceClient {
         }
     }
 }
+

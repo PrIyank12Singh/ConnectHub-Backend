@@ -1,4 +1,4 @@
-package com.ConnectHub.websocket_handler.payload;
+package com.connecthub.websocket_handler.payload;
 
 /**
  * All inbound STOMP frame types handled by ChatWebSocketHandler.
@@ -16,3 +16,5 @@ public enum MessageType {
     ROOM_LEAVE,         // userId, roomId
     PING                // sessionId — keep-alive from client
 }
+
+

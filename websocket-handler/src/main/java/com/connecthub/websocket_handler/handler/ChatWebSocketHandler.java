@@ -1,11 +1,11 @@
-package com.ConnectHub.websocket_handler.handler;
+package com.connecthub.websocket_handler.handler;
 
-import com.ConnectHub.websocket_handler.client.MessageServiceClient;
-import com.ConnectHub.websocket_handler.client.NotificationServiceClient;
-import com.ConnectHub.websocket_handler.client.PresenceServiceClient;
-import com.ConnectHub.websocket_handler.payload.ChatPayload;
-import com.ConnectHub.websocket_handler.payload.MessageType;
-import com.ConnectHub.websocket_handler.payload.OutboundEvent;
+import com.connecthub.websocket_handler.client.MessageServiceClient;
+import com.connecthub.websocket_handler.client.NotificationServiceClient;
+import com.connecthub.websocket_handler.client.PresenceServiceClient;
+import com.connecthub.websocket_handler.payload.ChatPayload;
+import com.connecthub.websocket_handler.payload.MessageType;
+import com.connecthub.websocket_handler.payload.OutboundEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
@@ -461,3 +461,5 @@ public class ChatWebSocketHandler {
         return sessions.size();
     }
 }
+
+

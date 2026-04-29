@@ -1,4 +1,4 @@
-package com.ConnectHub.presence_service;
+package com.connecthub.presence_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,3 +10,5 @@ class PresenceServiceApplicationTests {
     void contextLoads() {
     }
 }
+
+

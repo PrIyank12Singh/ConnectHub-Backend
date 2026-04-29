@@ -1,4 +1,4 @@
-package com.ConnectHub.auth_service.dto;
+package com.connecthub.auth_service.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -14,3 +14,5 @@ public class LoginRequest {
     @NotBlank
     private String password;
 }
+
+

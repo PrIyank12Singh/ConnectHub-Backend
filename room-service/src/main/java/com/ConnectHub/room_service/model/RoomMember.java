@@ -1,4 +1,4 @@
-package com.ConnectHub.room_service.model;
+package com.connecthub.room_service.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -58,3 +58,5 @@ public class RoomMember {
         }
     }
 }
+
+

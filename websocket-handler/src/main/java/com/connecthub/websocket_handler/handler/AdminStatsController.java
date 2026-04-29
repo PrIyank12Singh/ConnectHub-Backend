@@ -1,4 +1,4 @@
-package com.ConnectHub.websocket_handler.handler;
+package com.connecthub.websocket_handler.handler;
 
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
@@ -27,3 +27,5 @@ public class AdminStatsController {
                 Map.of("activeConnections", chatHandler.getActiveConnectionCount()));
     }
 }
+
+

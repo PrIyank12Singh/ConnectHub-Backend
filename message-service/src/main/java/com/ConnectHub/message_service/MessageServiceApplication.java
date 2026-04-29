@@ -1,4 +1,4 @@
-package com.ConnectHub.message_service;
+package com.connecthub.message_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

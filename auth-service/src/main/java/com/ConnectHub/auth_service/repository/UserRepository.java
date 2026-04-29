@@ -1,7 +1,7 @@
-package com.ConnectHub.auth_service.repository;
+package com.connecthub.auth_service.repository;
 
-import com.ConnectHub.auth_service.model.User;
-import com.ConnectHub.auth_service.model.UserStatus;
+import com.connecthub.auth_service.model.User;
+import com.connecthub.auth_service.model.UserStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,3 +25,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     void deleteByUserId(UUID userId);
 }
+
+

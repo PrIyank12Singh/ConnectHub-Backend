@@ -1,6 +1,6 @@
-package com.ConnectHub.api_gateway.filter;
+package com.connecthub.api_gateway.filter;
 
-import com.ConnectHub.api_gateway.config.JwtUtil;
+import com.connecthub.api_gateway.config.JwtUtil;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
@@ -60,3 +60,5 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
         // config properties if needed
     }
 }
+
+

@@ -1,4 +1,4 @@
-package com.ConnectHub.websocket_handler;
+package com.connecthub.websocket_handler;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,3 +10,5 @@ public class WebSocketHandlerApplication {
         SpringApplication.run(WebSocketHandlerApplication.class, args);
     }
 }
+
+

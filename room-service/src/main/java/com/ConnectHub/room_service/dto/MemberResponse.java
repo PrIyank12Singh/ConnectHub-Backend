@@ -1,6 +1,6 @@
-package com.ConnectHub.room_service.dto;
+package com.connecthub.room_service.dto;
 
-import com.ConnectHub.room_service.model.MemberRole;
+import com.connecthub.room_service.model.MemberRole;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -20,3 +20,5 @@ public class MemberResponse {
     private LocalDateTime lastReadAt;
     private Boolean isMuted;
 }
+
+

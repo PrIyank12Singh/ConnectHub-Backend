@@ -1,4 +1,4 @@
-package com.ConnectHub.api_gateway.config;
+package com.connecthub.api_gateway.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -46,3 +46,5 @@ public class JwtUtil {
                 .getPayload();
     }
 }
+
+

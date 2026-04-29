@@ -1,4 +1,4 @@
-package com.ConnectHub.notification_service.dto;
+package com.connecthub.notification_service.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -17,3 +17,5 @@ public class EmailNotificationRequest {
     @NotBlank(message = "body is required")
     private String body;
 }
+
+

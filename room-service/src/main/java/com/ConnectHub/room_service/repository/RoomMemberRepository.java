@@ -1,6 +1,6 @@
-package com.ConnectHub.room_service.repository;
+package com.connecthub.room_service.repository;
 
-import com.ConnectHub.room_service.model.RoomMember;
+import com.connecthub.room_service.model.RoomMember;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,3 +27,5 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
     @Query("SELECT rm FROM RoomMember rm WHERE rm.roomId = :roomId AND rm.lastReadAt IS NOT NULL")
     List<RoomMember> findMembersWithReadAt(@Param("roomId") UUID roomId);
 }
+
+

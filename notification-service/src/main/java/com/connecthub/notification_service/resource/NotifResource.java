@@ -1,10 +1,10 @@
-package com.ConnectHub.notification_service.resource;
+package com.connecthub.notification_service.resource;
 
-import com.ConnectHub.notification_service.dto.BulkNotificationRequest;
-import com.ConnectHub.notification_service.dto.EmailNotificationRequest;
-import com.ConnectHub.notification_service.dto.NotificationResponse;
-import com.ConnectHub.notification_service.dto.SendNotificationRequest;
-import com.ConnectHub.notification_service.service.NotificationService;
+import com.connecthub.notification_service.dto.BulkNotificationRequest;
+import com.connecthub.notification_service.dto.EmailNotificationRequest;
+import com.connecthub.notification_service.dto.NotificationResponse;
+import com.connecthub.notification_service.dto.SendNotificationRequest;
+import com.connecthub.notification_service.service.NotificationService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -143,3 +143,5 @@ public class NotifResource {
         return ResponseEntity.ok(notificationService.getAll());
     }
 }
+
+

@@ -1,4 +1,4 @@
-package com.ConnectHub.notification_service;
+package com.connecthub.notification_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,3 +10,5 @@ class NotificationServiceApplicationTests {
     void contextLoads() {
     }
 }
+
+

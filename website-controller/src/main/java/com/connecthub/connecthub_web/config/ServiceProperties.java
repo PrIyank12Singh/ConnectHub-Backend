@@ -29,3 +29,5 @@ public class ServiceProperties {
     @Value("${service.websocket.url}")
     private String websocketUrl;
 }
+
+

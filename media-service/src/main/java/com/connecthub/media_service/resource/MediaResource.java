@@ -1,7 +1,7 @@
-package com.ConnectHub.media_service.resource;
+package com.connecthub.media_service.resource;
 
-import com.ConnectHub.media_service.dto.MediaResponse;
-import com.ConnectHub.media_service.service.MediaService;
+import com.connecthub.media_service.dto.MediaResponse;
+import com.connecthub.media_service.service.MediaService;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -139,3 +139,5 @@ public class MediaResource {
         }
     }
 }
+
+

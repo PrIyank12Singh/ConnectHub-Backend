@@ -1,4 +1,4 @@
-package com.ConnectHub.auth_service.model;
+package com.connecthub.auth_service.model;
 
 public enum UserStatus {
     ONLINE,
@@ -6,3 +6,5 @@ public enum UserStatus {
     DND,
     INVISIBLE
 }
+
+

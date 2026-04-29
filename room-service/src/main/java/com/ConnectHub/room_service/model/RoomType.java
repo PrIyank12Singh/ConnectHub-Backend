@@ -1,6 +1,8 @@
-package com.ConnectHub.room_service.model;
+package com.connecthub.room_service.model;
 
 public enum RoomType {
     GROUP,
     DM
 }
+
+

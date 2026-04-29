@@ -1,6 +1,6 @@
-package com.ConnectHub.presence_service.dto;
+package com.connecthub.presence_service.dto;
 
-import com.ConnectHub.presence_service.model.UserStatus;
+import com.connecthub.presence_service.model.UserStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -17,3 +17,5 @@ public class UpdateStatusRequest {
     /** Optional free-text, max 160 chars */
     private String customMessage;
 }
+
+

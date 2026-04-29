@@ -1,7 +1,7 @@
-package com.ConnectHub.auth_service.config;
+package com.connecthub.auth_service.config;
 
-import com.ConnectHub.auth_service.dto.AuthResponse;
-import com.ConnectHub.auth_service.service.GoogleAuthService;
+import com.connecthub.auth_service.dto.AuthResponse;
+import com.connecthub.auth_service.service.GoogleAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/error", "/login/**", "/oauth2/**").permitAll()
+                .requestMatchers("/auth/**", "/error", "/login/**", "/oauth2/**","/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated())
             .oauth2Login(oauth2 -> oauth2
                 .successHandler(oAuth2SuccessHandler())
@@ -74,3 +74,4 @@ public class SecurityConfig {
         };
     }
 }
+

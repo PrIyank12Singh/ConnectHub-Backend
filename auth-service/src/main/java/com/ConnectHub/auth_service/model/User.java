@@ -1,4 +1,4 @@
-package com.ConnectHub.auth_service.model;
+package com.connecthub.auth_service.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -91,3 +91,5 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 }
+
+

@@ -1,6 +1,6 @@
-package com.ConnectHub.room_service.dto;
+package com.connecthub.room_service.dto;
 
-import com.ConnectHub.room_service.model.RoomType;
+import com.connecthub.room_service.model.RoomType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,3 +32,5 @@ public class CreateRoomRequest {
 
     private Integer maxMembers;
 }
+
+

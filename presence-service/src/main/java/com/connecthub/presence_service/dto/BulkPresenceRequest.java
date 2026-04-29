@@ -1,4 +1,4 @@
-package com.ConnectHub.presence_service.dto;
+package com.connecthub.presence_service.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
@@ -10,3 +10,5 @@ public class BulkPresenceRequest {
     @NotEmpty(message = "At least one userId is required")
     private List<String> userIds;
 }
+
+
