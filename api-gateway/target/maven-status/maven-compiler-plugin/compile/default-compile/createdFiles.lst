@@ -1,0 +1,4 @@
+com\ConnectHub\api_gateway\config\JwtUtil.class
+com\ConnectHub\api_gateway\filter\JwtAuthFilter$Config.class
+com\ConnectHub\api_gateway\filter\JwtAuthFilter.class
+com\ConnectHub\api_gateway\ApiGatewayApplication.class
