@@ -1,0 +1,500 @@
+{
+  "info": {
+    "name": "ConnectHub — connecthub-web (MVC Layer)",
+    "_postman_id": "connecthub-web-v1",
+    "description": "All endpoints for the 8th microservice: connecthub-web running on port 8088.\nAll requests go through api-gateway (port 8080) at /web/**.\n\nSetup:\n1. Run all services (ports 8081-8088 + gateway on 8080)\n2. Run POST /web/auth/login first → copy token → set {{token}} variable\n3. Collection uses {{base_url}} = http://localhost:8080",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",  "value": "http://localhost:8080" },
+    { "key": "token",     "value": "PASTE_JWT_TOKEN_HERE" },
+    { "key": "userId",    "value": "PASTE_USER_UUID_HERE" },
+    { "key": "roomId",    "value": "PASTE_ROOM_UUID_HERE" },
+    { "key": "messageId", "value": "PASTE_MESSAGE_UUID_HERE" }
+  ],
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/web/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"Secret123!\",\n  \"fullName\": \"Alice Smith\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (run this first — copy token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('token', json.accessToken);",
+                  "pm.collectionVariables.set('userId', json.userId);",
+                  "console.log('Token saved:', json.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/web/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"Secret123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/auth/profile/{{userId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/web/auth/profile/{{userId}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Alice Updated\",\n  \"bio\": \"Love coding!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/auth/search?username=alice",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update Status (ONLINE)",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/web/auth/status/{{userId}}?status=ONLINE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/web/auth/logout",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Dashboard (Aggregated)",
+      "item": [
+        {
+          "name": "Get Dashboard (profile + rooms + presence + notifs)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/dashboard/{{userId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Rooms",
+      "item": [
+        {
+          "name": "Create Room (GROUP)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('roomId', json.roomId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/web/rooms",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"dev-team\",\n  \"type\": \"GROUP\",\n  \"createdById\": \"{{userId}}\",\n  \"description\": \"Engineering chat\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Rooms by User",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/rooms/user/{{userId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Room by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/rooms/{{roomId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update Room",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/web/rooms/{{roomId}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"dev-team-v2\",\n  \"description\": \"Updated description\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Room Members",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/rooms/{{roomId}}/members",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Add Member",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/web/rooms/{{roomId}}/members",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"TARGET_USER_UUID\",\n  \"role\": \"MEMBER\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Mute Member",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/web/rooms/{{roomId}}/members/TARGET_USER_UUID/mute?mute=true",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update Last Read",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/web/rooms/{{roomId}}/members/{{userId}}/read",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/rooms/{{roomId}}/unread/{{userId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Messages",
+      "item": [
+        {
+          "name": "Send Message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('messageId', json.messageId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/web/messages",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"senderId\": \"{{userId}}\",\n  \"content\": \"Hello from connecthub-web!\",\n  \"type\": \"TEXT\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Messages by Room (paginated)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/messages/room/{{roomId}}?page=0&size=20",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Message by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/messages/{{messageId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Edit Message",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/web/messages/{{messageId}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Edited message content\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Search Messages",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/messages/room/{{roomId}}/search?keyword=hello",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update Delivery Status → READ",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/web/messages/{{messageId}}/status?status=READ",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/web/messages/{{messageId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Presence",
+      "item": [
+        {
+          "name": "Set Online",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/web/presence/online/{{userId}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceType\": \"WEB\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Presence",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/presence/{{userId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update Presence Status → AWAY",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/web/presence/status/{{userId}}?status=AWAY",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Online Count",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/presence/online/count",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Set Offline",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/web/presence/offline/{{userId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/notifications/{{userId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/notifications/{{userId}}/unread-count",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Mark All Read",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/web/notifications/read-all/{{userId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Room Manager (Admin)",
+      "item": [
+        {
+          "name": "Pin Message",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/web/room-manager/rooms/{{roomId}}/pin/{{messageId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Unpin Message",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/web/room-manager/rooms/{{roomId}}/pin/{{messageId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Clear Room History",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/web/room-manager/rooms/{{roomId}}/history",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Room Media Gallery",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/room-manager/rooms/{{roomId}}/media",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Platform Admin",
+      "item": [
+        {
+          "name": "Admin Dashboard",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/admin/dashboard",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/admin/users",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Suspend User",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/web/admin/users/TARGET_UUID/suspend",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Platform Analytics",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/admin/analytics",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Broadcast Notification",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/web/admin/broadcast",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Maintenance\",\n  \"message\": \"Scheduled downtime at midnight\",\n  \"type\": \"SYSTEM\"\n}"
+            }
+          }
+        },
+        {
+          "name": "View Audit Logs",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/admin/audit-logs",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Active Connections",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/web/admin/connections",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    }
+  ]
+}
