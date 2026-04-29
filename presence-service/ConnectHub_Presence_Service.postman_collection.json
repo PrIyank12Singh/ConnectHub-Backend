@@ -1,0 +1,367 @@
+{
+  "info": {
+    "name": "ConnectHub — Presence Service",
+    "_postman_id": "connecthub-presence-v1",
+    "description": "Full test suite for the presence-service (port 8085, or via API Gateway port 8080).\n\n**Setup:**\n1. Run `schema.sql` in MySQL first.\n2. Start services: auth (8081) → presence (8085) → api-gateway (8080).\n3. Use the 'Login & Save Token' request first — it auto-saves the token.\n4. Then run any presence request in order.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "GATEWAY",    "value": "http://localhost:8080" },
+    { "key": "DIRECT",     "value": "http://localhost:8085" },
+    { "key": "token",      "value": "" },
+    { "key": "userId",     "value": "" },
+    { "key": "sessionId",  "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. Auth — Login & Save Token",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{GATEWAY}}/auth/login", "host": ["{{GATEWAY}}"], "path": ["auth","login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"test@connecthub.com\",\n  \"password\": \"Password123!\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "const res = pm.response.json();",
+            "pm.collectionVariables.set('token',   res.accessToken);",
+            "pm.collectionVariables.set('userId',  res.userId);",
+            "pm.test('Login OK', () => pm.response.to.have.status(200));",
+            "pm.test('Token present', () => pm.expect(res.accessToken).to.be.a('string'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "1. Set Online  [POST /presence/online]",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/presence/online", "host": ["{{GATEWAY}}"], "path": ["presence","online"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"sessionId\": \"web-test-session-001\",\n  \"deviceType\": \"WEB\",\n  \"ipAddress\": \"127.0.0.1\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "const res = pm.response.json();",
+            "pm.collectionVariables.set('sessionId', res.sessionId);",
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('status is ONLINE', () => pm.expect(res.status).to.eql('ONLINE'));",
+            "pm.test('userId matches', () => pm.expect(res.userId).to.eql(pm.collectionVariables.get('userId')));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "2. Get Presence  [GET /presence/{userId}]",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/presence/{{userId}}", "host": ["{{GATEWAY}}"], "path": ["presence","{{userId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const res = pm.response.json();",
+            "pm.test('Has userId', () => pm.expect(res.userId).to.be.a('string'));",
+            "pm.test('Has status', () => pm.expect(res.status).to.be.oneOf(['ONLINE','AWAY','DND','INVISIBLE']));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "3. Update Status — AWAY  [PUT /presence/status]",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/presence/status", "host": ["{{GATEWAY}}"], "path": ["presence","status"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"status\": \"AWAY\",\n  \"customMessage\": \"In a meeting\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const res = pm.response.json();",
+            "pm.test('status is AWAY', () => pm.expect(res.status).to.eql('AWAY'));",
+            "pm.test('customMessage saved', () => pm.expect(res.customMessage).to.eql('In a meeting'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "4. Update Status — DND  [PUT /presence/status]",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/presence/status", "host": ["{{GATEWAY}}"], "path": ["presence","status"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"status\": \"DND\",\n  \"customMessage\": \"Focusing — please don't disturb\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('status is DND', () => pm.expect(pm.response.json().status).to.eql('DND'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "5. Update Status — ONLINE  [PUT /presence/status]",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/presence/status", "host": ["{{GATEWAY}}"], "path": ["presence","status"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"status\": \"ONLINE\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('status is ONLINE', () => pm.expect(pm.response.json().status).to.eql('ONLINE'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "6. Bulk Presence  [POST /presence/bulk]",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/presence/bulk", "host": ["{{GATEWAY}}"], "path": ["presence","bulk"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userIds\": [\"{{userId}}\", \"00000000-0000-0000-0000-000000000099\"]\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const arr = pm.response.json();",
+            "pm.test('Returns array', () => pm.expect(arr).to.be.an('array'));",
+            "pm.test('Has 2 entries', () => pm.expect(arr.length).to.eql(2));",
+            "pm.test('Offline user is INVISIBLE', () => {",
+            "  const offline = arr.find(p => p.userId === '00000000-0000-0000-0000-000000000099');",
+            "  pm.expect(offline.status).to.eql('INVISIBLE');",
+            "});"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "7. All Online Users  [GET /presence/users/online]",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/presence/users/online", "host": ["{{GATEWAY}}"], "path": ["presence","users","online"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "8. Online Count  [GET /presence/count/online]",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/presence/count/online", "host": ["{{GATEWAY}}"], "path": ["presence","count","online"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('onlineCount >= 1', () => pm.expect(pm.response.json().onlineCount).to.be.at.least(1));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "9. Ping Session  [PUT /presence/ping/{sessionId}]",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/presence/ping/web-test-session-001", "host": ["{{GATEWAY}}"], "path": ["presence","ping","web-test-session-001"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Returns pong', () => pm.expect(pm.response.json().message).to.eql('pong'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "10. Is Online  [GET /presence/check/{userId}]",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/presence/check/{{userId}}", "host": ["{{GATEWAY}}"], "path": ["presence","check","{{userId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('online is true', () => pm.expect(pm.response.json().online).to.be.true);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "11. Is Online — Unknown User (expect false)  [GET /presence/check/{userId}]",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/presence/check/00000000-0000-0000-0000-000000000099", "host": ["{{GATEWAY}}"], "path": ["presence","check","00000000-0000-0000-0000-000000000099"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('online is false', () => pm.expect(pm.response.json().online).to.be.false);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "12. Second Session (same user, mobile)  [POST /presence/online]",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/presence/online", "host": ["{{GATEWAY}}"], "path": ["presence","online"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"sessionId\": \"mobile-test-session-001\",\n  \"deviceType\": \"MOBILE\",\n  \"ipAddress\": \"192.168.1.1\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('deviceType is MOBILE', () => pm.expect(pm.response.json().deviceType).to.eql('MOBILE'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "13. Disconnect One Session  [DELETE /presence/session/{sessionId}]",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/presence/session/mobile-test-session-001", "host": ["{{GATEWAY}}"], "path": ["presence","session","mobile-test-session-001"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Disconnect message', () => pm.expect(pm.response.json().message).to.include('disconnected'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "14. Manual Stale Cleanup  [DELETE /presence/cleanup]",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/presence/cleanup", "host": ["{{GATEWAY}}"], "path": ["presence","cleanup"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Cleanup message', () => pm.expect(pm.response.json().message).to.include('cleanup'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "15. Set Offline (full logout)  [DELETE /presence/offline/{userId}]",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/presence/offline/{{userId}}", "host": ["{{GATEWAY}}"], "path": ["presence","offline","{{userId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Offline message', () => pm.expect(pm.response.json().message).to.include('offline'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "16. Get Presence After Logout (expect 404)  [GET /presence/{userId}]",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/presence/{{userId}}", "host": ["{{GATEWAY}}"], "path": ["presence","{{userId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 404 — no active session', () => pm.response.to.have.status(404));"
+          ]
+        }
+      }]
+    }
+  ]
+}
