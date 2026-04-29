@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/auth")
@@ -90,6 +92,13 @@ public class AuthResource {
             @PathVariable UUID userId,
             @Valid @RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(authService.updateProfile(userId, request));
+    }
+
+    @PutMapping(value = "/profile/{userId}/avatar", consumes = "multipart/form-data")
+    public ResponseEntity<UserResponse> updateAvatar(
+            @PathVariable UUID userId,
+            @RequestPart("file") MultipartFile file) {
+        return ResponseEntity.ok(authService.updateAvatar(userId, file));
     }
 
     @PutMapping("/password/{userId}")

@@ -9,6 +9,7 @@ import com.ConnectHub.auth_service.dto.UserResponse;
 import com.ConnectHub.auth_service.model.UserStatus;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface AuthService {
 
@@ -25,6 +26,8 @@ public interface AuthService {
     UserResponse getUserById(UUID userId);
 
     UserResponse updateProfile(UUID userId, UpdateProfileRequest request);
+
+    UserResponse updateAvatar(UUID userId, MultipartFile avatarFile);
 
     void changePassword(UUID userId, ChangePasswordRequest request);
 

@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional
@@ -27,11 +28,16 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final MediaServiceClient mediaServiceClient;
 
-    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public AuthServiceImpl(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           JwtUtil jwtUtil,
+                           MediaServiceClient mediaServiceClient) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.mediaServiceClient = mediaServiceClient;
     }
 
     @Override
@@ -122,6 +128,17 @@ public class AuthServiceImpl implements AuthService {
         user.setFullName(request.getFullName().trim());
         user.setAvatarUrl(request.getAvatarUrl());
         user.setBio(request.getBio());
+
+        return toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponse updateAvatar(UUID userId, MultipartFile avatarFile) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        String avatarUrl = mediaServiceClient.uploadAvatar(userId, avatarFile);
+        user.setAvatarUrl(avatarUrl);
 
         return toUserResponse(userRepository.save(user));
     }
