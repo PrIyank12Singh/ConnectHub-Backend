@@ -5,7 +5,10 @@ com\ConnectHub\message_service\dto\SendMessageRequest.class
 com\ConnectHub\message_service\model\Message.class
 com\ConnectHub\message_service\dto\MessageResponse$MessageResponseBuilder.class
 com\ConnectHub\message_service\config\SecurityConfig.class
+com\ConnectHub\message_service\resource\AuditLogResource.class
+com\ConnectHub\message_service\model\AuditLog.class
 com\ConnectHub\message_service\model\DeliveryStatus.class
+com\ConnectHub\message_service\repository\AuditLogRepository.class
 com\ConnectHub\message_service\service\MessageService.class
 com\ConnectHub\message_service\dto\MessageResponse.class
 com\ConnectHub\message_service\model\MessageType.class

@@ -122,4 +122,14 @@ public class MessageResource {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime after) {
         return ResponseEntity.ok(messageService.getUnreadMessages(roomId, after));
     }
+
+    // ─── Get Unread Count ────────────────────────────────────────────────────
+
+    @GetMapping("/room/{roomId}/unread/count")
+    public ResponseEntity<Map<String, Object>> getUnreadCount(
+            @PathVariable UUID roomId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime after) {
+        long count = messageService.getUnreadCount(roomId, after);
+        return ResponseEntity.ok(Map.of("roomId", roomId, "unreadCount", count));
+    }
 }

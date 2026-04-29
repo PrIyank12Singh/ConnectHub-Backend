@@ -30,4 +30,6 @@ public interface MessageService {
     long getMessageCount(UUID roomId);
 
     List<MessageResponse> getUnreadMessages(UUID roomId, LocalDateTime after);
+
+    long getUnreadCount(UUID roomId, LocalDateTime after);
 }

@@ -31,5 +31,8 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     @Query("SELECT m FROM Message m WHERE m.roomId = :roomId AND m.sentAt > :after AND m.isDeleted = false")
     List<Message> findUnreadMessages(@Param("roomId") UUID roomId, @Param("after") LocalDateTime after);
 
+    @Query("SELECT COUNT(m) FROM Message m WHERE m.roomId = :roomId AND m.sentAt > :after AND m.isDeleted = false")
+    long countUnreadMessages(@Param("roomId") UUID roomId, @Param("after") LocalDateTime after);
+
     void deleteByMessageId(UUID messageId);
 }

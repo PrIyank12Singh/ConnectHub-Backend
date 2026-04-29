@@ -13,6 +13,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +24,13 @@ import org.springframework.web.server.ResponseStatusException;
 public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
+    private final com.ConnectHub.message_service.repository.AuditLogRepository auditLogRepository;
 
-    public MessageServiceImpl(MessageRepository messageRepository) {
+    @Autowired
+    public MessageServiceImpl(MessageRepository messageRepository,
+                              com.ConnectHub.message_service.repository.AuditLogRepository auditLogRepository) {
         this.messageRepository = messageRepository;
+        this.auditLogRepository = auditLogRepository;
     }
 
     @Override
@@ -34,10 +39,16 @@ public class MessageServiceImpl implements MessageService {
             request.setType(MessageType.TEXT);
         }
 
-        if (request.getType() == MessageType.TEXT && 
-            (request.getContent() == null || request.getContent().isBlank())) {
+        if (request.getType() == MessageType.TEXT &&
+                (request.getContent() == null || request.getContent().isBlank())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Content cannot be empty for TEXT messages");
+        }
+
+        if (request.getType() == MessageType.IMAGE &&
+                (request.getMediaUrl() == null || request.getMediaUrl().isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "mediaUrl is required for IMAGE messages");
         }
 
         Message message = new Message();
@@ -90,7 +101,23 @@ public class MessageServiceImpl implements MessageService {
         message.setIsEdited(true);
         message.setEditedAt(LocalDateTime.now());
 
-        return toMessageResponse(messageRepository.save(message));
+        Message saved = messageRepository.save(message);
+
+        // Audit: record edit
+        try {
+            if (auditLogRepository != null) {
+                com.ConnectHub.message_service.model.AuditLog log = new com.ConnectHub.message_service.model.AuditLog();
+                log.setAction("MESSAGE_EDIT");
+                log.setActorId(saved.getSenderId());
+                log.setTargetId(saved.getMessageId());
+                log.setDetails("Edited message content");
+                auditLogRepository.save(log);
+            }
+        } catch (Exception ex) {
+            // ignore audit failures
+        }
+
+        return toMessageResponse(saved);
     }
 
     @Override
@@ -98,7 +125,21 @@ public class MessageServiceImpl implements MessageService {
         Message message = findMessage(messageId);
         message.setIsDeleted(true);
         message.setContent("[Message deleted]");
-        messageRepository.save(message);
+        Message saved = messageRepository.save(message);
+
+        // Audit: record deletion
+        try {
+            if (auditLogRepository != null) {
+                com.ConnectHub.message_service.model.AuditLog log = new com.ConnectHub.message_service.model.AuditLog();
+                log.setAction("MESSAGE_DELETE");
+                log.setActorId(saved.getSenderId());
+                log.setTargetId(saved.getMessageId());
+                log.setDetails("Soft-deleted message by sender");
+                auditLogRepository.save(log);
+            }
+        } catch (Exception ex) {
+            // don't block main flow on audit failures
+        }
     }
 
     @Override
@@ -133,6 +174,12 @@ public class MessageServiceImpl implements MessageService {
                 .stream()
                 .map(this::toMessageResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getUnreadCount(UUID roomId, LocalDateTime after) {
+        return messageRepository.countUnreadMessages(roomId, after);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
