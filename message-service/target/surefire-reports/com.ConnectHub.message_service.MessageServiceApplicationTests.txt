@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.ConnectHub.message_service.MessageServiceApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 54.08 s -- in com.ConnectHub.message_service.MessageServiceApplicationTests

@@ -8,6 +8,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +24,9 @@ import java.util.Map;
 @Slf4j
 public class AdminController {
 
+    private static final String PRESENCE_COUNT_ONLINE = "/presence/count/online";
+    private static final String AUTH_ADMIN_USERS = "/auth/admin/users";
+
     private final RestTemplate restTemplate;
     private final ServiceProperties svc;
 
@@ -36,9 +40,9 @@ public class AdminController {
     public ResponseEntity<Map<String, Object>> adminDashboard(@RequestHeader("Authorization") String auth) {
         try {
             ResponseEntity<Object> onlineCount  = forward(HttpMethod.GET,
-                    svc.getPresenceUrl() + "/presence/online/count", null, auth);
+                svc.getPresenceUrl() + PRESENCE_COUNT_ONLINE, null, auth);
             ResponseEntity<Object> allUsers     = forward(HttpMethod.GET,
-                    svc.getAuthUrl() + "/auth/admin/users", null, auth);
+                svc.getAuthUrl() + AUTH_ADMIN_USERS, null, auth);
             ResponseEntity<Object> allRooms     = forward(HttpMethod.GET,
                     svc.getRoomUrl() + "/rooms", null, auth);
 
@@ -59,30 +63,45 @@ public class AdminController {
     /** GET /web/admin/users  — list all users */
     @GetMapping("/users")
     public ResponseEntity<Object> getAllUsers(@RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.GET, svc.getAuthUrl() + "/auth/admin/users", null, auth);
+        return forward(HttpMethod.GET, svc.getAuthUrl() + AUTH_ADMIN_USERS, null, auth);
     }
 
     /** PUT /web/admin/users/{userId}/suspend  — suspend user (set isActive=false) */
     @PutMapping("/users/{userId}/suspend")
     public ResponseEntity<Object> suspendUser(@PathVariable String userId,
                                               @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.PUT,
-                svc.getAuthUrl() + "/auth/admin/users/" + userId + "/suspend", null, auth);
+        ResponseEntity<Object> response = forward(HttpMethod.PUT,
+                                svc.getAuthUrl() + AUTH_ADMIN_USERS + "/" + userId + "/suspend", null, auth);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            writeAuditLog("SUSPEND_USER", extractUserIdFromToken(auth), userId,
+                    "Admin suspended user " + userId, auth);
+        }
+        return response;
     }
 
     /** PUT /web/admin/users/{userId}/reactivate */
     @PutMapping("/users/{userId}/reactivate")
     public ResponseEntity<Object> reactivateUser(@PathVariable String userId,
                                                  @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.PUT,
-                svc.getAuthUrl() + "/auth/admin/users/" + userId + "/reactivate", null, auth);
+        ResponseEntity<Object> response = forward(HttpMethod.PUT,
+                                svc.getAuthUrl() + AUTH_ADMIN_USERS + "/" + userId + "/reactivate", null, auth);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            writeAuditLog("REACTIVATE_USER", extractUserIdFromToken(auth), userId,
+                    "Admin reactivated user " + userId, auth);
+        }
+        return response;
     }
 
     /** DELETE /web/admin/users/{userId}  — permanently delete user */
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<Object> deleteUser(@PathVariable String userId,
                                              @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.DELETE, svc.getAuthUrl() + "/auth/admin/users/" + userId, null, auth);
+        ResponseEntity<Object> response = forward(HttpMethod.DELETE, svc.getAuthUrl() + AUTH_ADMIN_USERS + "/" + userId, null, auth);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            writeAuditLog("DELETE_USER", extractUserIdFromToken(auth), userId,
+                    "Admin deleted user " + userId, auth);
+        }
+        return response;
     }
 
     // ─── Room Management ─────────────────────────────────────────────────────
@@ -97,7 +116,12 @@ public class AdminController {
     @DeleteMapping("/rooms/{roomId}")
     public ResponseEntity<Object> deleteRoom(@PathVariable String roomId,
                                              @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.DELETE, svc.getRoomUrl() + "/rooms/" + roomId, null, auth);
+        ResponseEntity<Object> response = forward(HttpMethod.DELETE, svc.getRoomUrl() + "/rooms/" + roomId, null, auth);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            writeAuditLog("DELETE_ROOM", extractUserIdFromToken(auth), roomId,
+                    "Admin deleted room " + roomId, auth);
+        }
+        return response;
     }
 
     // ─── Message Management ──────────────────────────────────────────────────
@@ -117,7 +141,12 @@ public class AdminController {
     @DeleteMapping("/messages/{messageId}")
     public ResponseEntity<Object> deleteMessage(@PathVariable String messageId,
                                                 @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.DELETE, svc.getMessageUrl() + "/messages/" + messageId, null, auth);
+        ResponseEntity<Object> response = forward(HttpMethod.DELETE, svc.getMessageUrl() + "/messages/" + messageId, null, auth);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            writeAuditLog("DELETE_MESSAGE", extractUserIdFromToken(auth), messageId,
+                    "Admin deleted message " + messageId, auth);
+        }
+        return response;
     }
 
     // ─── Active Connections ───────────────────────────────────────────────────
@@ -125,13 +154,13 @@ public class AdminController {
     /** GET /web/admin/connections  — live WebSocket connection count */
     @GetMapping("/connections")
     public ResponseEntity<Object> getActiveConnections(@RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.GET, svc.getPresenceUrl() + "/presence/online/count", null, auth);
+        return forward(HttpMethod.GET, svc.getPresenceUrl() + PRESENCE_COUNT_ONLINE, null, auth);
     }
 
     /** GET /web/admin/users/online  — list currently online users */
     @GetMapping("/users/online")
     public ResponseEntity<Object> getOnlineUsers(@RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.GET, svc.getPresenceUrl() + "/presence/online", null, auth);
+        return forward(HttpMethod.GET, svc.getPresenceUrl() + "/presence/users/online", null, auth);
     }
 
     // ─── Platform Analytics ───────────────────────────────────────────────────
@@ -144,9 +173,9 @@ public class AdminController {
     public ResponseEntity<Map<String, Object>> getPlatformAnalytics(@RequestHeader("Authorization") String auth) {
         try {
             ResponseEntity<Object> userCount    = forward(HttpMethod.GET,
-                    svc.getAuthUrl() + "/auth/admin/users/count", null, auth);
+                    svc.getAuthUrl() + AUTH_ADMIN_USERS + "/count", null, auth);  // ← fixed slash
             ResponseEntity<Object> onlineCount  = forward(HttpMethod.GET,
-                    svc.getPresenceUrl() + "/presence/online/count", null, auth);
+                svc.getPresenceUrl() + PRESENCE_COUNT_ONLINE, null, auth);
             ResponseEntity<Object> mediaCount   = forward(HttpMethod.GET,
                     svc.getMediaUrl() + "/media/count", null, auth);
 
@@ -168,7 +197,29 @@ public class AdminController {
     @PostMapping("/broadcast")
     public ResponseEntity<Object> sendPlatformNotification(@RequestBody Map<String, Object> body,
                                                            @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.POST, svc.getNotificationUrl() + "/notifications/bulk", body, auth);
+        try {
+            // Fetch all users to get their IDs
+            ResponseEntity<Object> usersResponse = forward(HttpMethod.GET,
+                    svc.getAuthUrl() + AUTH_ADMIN_USERS, null, auth);
+
+            List<String> recipientIds = new java.util.ArrayList<>();
+            if (usersResponse.getBody() instanceof List<?> users) {
+                users.forEach(u -> {
+                    if (u instanceof Map<?, ?> user && user.get("userId") != null) {
+                        recipientIds.add(user.get("userId").toString());
+                    }
+                });
+            }
+
+            Map<String, Object> enrichedBody = new java.util.HashMap<>(body);
+            enrichedBody.put("recipientIds", recipientIds);
+            return forward(HttpMethod.POST,
+                    svc.getNotificationUrl() + "/notifications/bulk", enrichedBody, auth);
+        } catch (Exception e) {
+            log.error("Broadcast failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(Map.of("error", "Broadcast failed", "detail", e.getMessage()));
+        }
     }
 
     // ─── Audit Logs ──────────────────────────────────────────────────────────
@@ -191,7 +242,12 @@ public class AdminController {
     @DeleteMapping("/media/{mediaId}")
     public ResponseEntity<Object> deleteMedia(@PathVariable String mediaId,
                                               @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.DELETE, svc.getMediaUrl() + "/media/" + mediaId, null, auth);
+        ResponseEntity<Object> response = forward(HttpMethod.DELETE, svc.getMediaUrl() + "/media/" + mediaId, null, auth);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            writeAuditLog("DELETE_MEDIA", extractUserIdFromToken(auth), mediaId,
+                    "Admin deleted media " + mediaId, auth);
+        }
+        return response;
     }
 
     // ─── Internal helper ─────────────────────────────────────────────────────
@@ -210,6 +266,35 @@ public class AdminController {
                     .body(Map.of("error", "Downstream service unavailable", "detail", e.getMessage()));
         }
     }
+
+    private HttpHeaders buildHeaders(String authHeader) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        if (authHeader != null) headers.set("Authorization", authHeader);
+        return headers;
+    }
+
+    private void writeAuditLog(String action, String actorId, String targetId, String details, String auth) {
+        try {
+            Map<String, Object> logEntry = Map.of(
+                    "action", action,
+                    "actorId", actorId != null ? actorId : "",
+                    "targetId", targetId != null ? targetId : "",
+                    "details", details != null ? details : ""
+            );
+            forward(HttpMethod.POST, svc.getMessageUrl() + "/audit/logs", logEntry, auth);
+        } catch (Exception e) {
+            log.warn("Audit log write failed: {}", e.getMessage());
+        }
+    }
+
+    private String extractUserIdFromToken(String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String payload = new String(java.util.Base64.getUrlDecoder().decode(token.split("\\.")[1]));
+            return payload.split("\"sub\":\"")[1].split("\"")[0];
+        } catch (Exception e) {
+            return "unknown";
+        }
+    }
 }
-
-

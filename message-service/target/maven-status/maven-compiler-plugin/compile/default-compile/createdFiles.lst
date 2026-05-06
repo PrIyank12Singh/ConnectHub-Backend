@@ -14,3 +14,4 @@ com\ConnectHub\message_service\dto\MessageResponse.class
 com\ConnectHub\message_service\model\MessageType.class
 com\ConnectHub\message_service\repository\MessageRepository.class
 com\ConnectHub\message_service\dto\EditMessageRequest.class
+com\ConnectHub\message_service\exception\GlobalExceptionHandler.class

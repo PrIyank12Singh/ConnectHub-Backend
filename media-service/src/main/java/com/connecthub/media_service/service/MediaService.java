@@ -25,7 +25,7 @@ public interface MediaService {
 
     long getFileCount(UUID roomId);
 
+    long getTotalFileCount();
+
     List<MediaResponse> getAllFiles();
 }
-
-

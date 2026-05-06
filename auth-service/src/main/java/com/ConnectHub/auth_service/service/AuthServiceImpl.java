@@ -25,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional
 public class AuthServiceImpl implements AuthService {
 
+    private static final String USER_NOT_FOUND = "User not found";
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -107,7 +109,7 @@ public class AuthServiceImpl implements AuthService {
 
         UUID userId = jwtUtil.extractUserId(token);
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
 
         return buildAuthResponse(user);
     }
@@ -116,14 +118,14 @@ public class AuthServiceImpl implements AuthService {
     @Transactional(readOnly = true)
     public UserResponse getUserById(UUID userId) {
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
         return toUserResponse(user);
     }
 
     @Override
     public UserResponse updateProfile(UUID userId, UpdateProfileRequest request) {
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
 
         user.setFullName(request.getFullName().trim());
         user.setAvatarUrl(request.getAvatarUrl());
@@ -135,7 +137,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserResponse updateAvatar(UUID userId, MultipartFile avatarFile) {
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
 
         String avatarUrl = mediaServiceClient.uploadAvatar(userId, avatarFile);
         user.setAvatarUrl(avatarUrl);
@@ -146,7 +148,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void changePassword(UUID userId, ChangePasswordRequest request) {
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
@@ -172,7 +174,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserResponse updateStatus(UUID userId, UserStatus status) {
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
 
         user.setStatus(status);
         if (status == UserStatus.INVISIBLE) {
@@ -185,13 +187,57 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserResponse recordLastSeen(UUID userId) {
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
 
         user.setStatus(UserStatus.INVISIBLE);
         user.setLastSeenAt(LocalDateTime.now());
 
         return toUserResponse(userRepository.save(user));
     }
+
+    // ─── Admin ───────────────────────────────────────────────────────────────
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(this::toUserResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getUserCount() {
+        return userRepository.count();
+    }
+
+    @Override
+    public UserResponse suspendUser(UUID userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
+        user.setIsActive(false);
+        user.setStatus(UserStatus.INVISIBLE);
+        return toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponse reactivateUser(UUID userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
+        user.setIsActive(true);
+        return toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public void deleteUser(UUID userId) {
+        if (!userRepository.findByUserId(userId).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND);
+        }
+        userRepository.deleteByUserId(userId);
+    }
+
+    // ─── Private helpers ─────────────────────────────────────────────────────
 
     private AuthResponse buildAuthResponse(User user) {
         String accessToken = jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole().name());
@@ -224,5 +270,3 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 }
-
-

@@ -133,6 +133,15 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<RoomResponse> getAllRooms() {
+        return roomRepository.findAll()
+                .stream()
+                .map(this::toRoomResponse)
+                .toList();
+    }
+
+    @Override
     public MemberResponse addMember(UUID roomId, AddMemberRequest request) {
         Room room = findRoom(roomId);
 

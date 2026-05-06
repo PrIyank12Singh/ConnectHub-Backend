@@ -1,10 +1,9 @@
 package com.connecthub.auth_service.service;
 
-import com.connecthub.auth_service.dto.UserResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -54,13 +53,18 @@ public class MediaServiceClient {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-            ResponseEntity<Map> response = restTemplate.exchange(
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                     mediaServiceUrl + "/media/upload/image",
                     HttpMethod.POST,
                     new HttpEntity<>(body, headers),
-                    Map.class);
+                    new ParameterizedTypeReference<>() {});
 
-            Object url = response.getBody() != null ? response.getBody().get("url") : null;
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody == null) {
+                return null;
+            }
+
+            Object url = responseBody.get("url");
             if (url == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Media service did not return an avatar URL");
             }

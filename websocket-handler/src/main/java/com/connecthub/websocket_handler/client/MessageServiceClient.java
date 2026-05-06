@@ -1,5 +1,6 @@
 package com.connecthub.websocket_handler.client;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -15,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
 public class MessageServiceClient {
 
     private static final Logger log = LoggerFactory.getLogger(MessageServiceClient.class);
+    private static final String MESSAGES_ROOT = "/messages";
+    private static final String MESSAGES_PATH = "/messages/";
 
     private final RestTemplate restTemplate;
 
@@ -39,11 +42,11 @@ public class MessageServiceClient {
 
             @SuppressWarnings("unchecked")
             Map<String, Object> saved = restTemplate.postForObject(
-                    messageServiceUrl + "/messages", payload, Map.class);
+                    messageServiceUrl + MESSAGES_ROOT, payload, Map.class);
             return saved;
         } catch (Exception ex) {
             log.error("[MessageClient] sendMessage failed: {}", ex.getMessage());
-            return null;
+            return Collections.emptyMap();
         }
     }
 
@@ -52,7 +55,7 @@ public class MessageServiceClient {
         try {
             Map<String, String> payload = new HashMap<>();
             payload.put("content", newContent);
-            restTemplate.put(messageServiceUrl + "/messages/" + messageId, payload);
+            restTemplate.put(messageServiceUrl + MESSAGES_PATH + messageId, payload);
         } catch (Exception ex) {
             log.error("[MessageClient] editMessage failed: {}", ex.getMessage());
         }
@@ -61,7 +64,7 @@ public class MessageServiceClient {
     /** Soft-delete a message */
     public void deleteMessage(String messageId) {
         try {
-            restTemplate.delete(messageServiceUrl + "/messages/" + messageId);
+            restTemplate.delete(messageServiceUrl + MESSAGES_PATH + messageId);
         } catch (Exception ex) {
             log.error("[MessageClient] deleteMessage failed: {}", ex.getMessage());
         }
@@ -70,7 +73,7 @@ public class MessageServiceClient {
     /** Update delivery status — SENT → DELIVERED → READ */
     public void updateDeliveryStatus(String messageId, String status) {
         try {
-            restTemplate.put(messageServiceUrl + "/messages/" + messageId
+            restTemplate.put(messageServiceUrl + MESSAGES_PATH + messageId
                     + "/status?status=" + status, null);
         } catch (Exception ex) {
             log.error("[MessageClient] updateDeliveryStatus failed: {}", ex.getMessage());

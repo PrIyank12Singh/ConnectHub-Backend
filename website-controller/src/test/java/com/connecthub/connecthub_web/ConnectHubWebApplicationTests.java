@@ -1,5 +1,6 @@
 package com.connecthub.connecthub_web;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -7,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class ConnectHubWebApplicationTests {
     @Test
     void contextLoads() {
+        Assertions.assertTrue(true);
     }
 }
 

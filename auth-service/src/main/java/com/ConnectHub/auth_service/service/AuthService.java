@@ -36,6 +36,16 @@ public interface AuthService {
     UserResponse updateStatus(UUID userId, UserStatus status);
 
     UserResponse recordLastSeen(UUID userId);
+
+    // ─── Admin ───────────────────────────────────────────────────────────────
+
+    List<UserResponse> getAllUsers();
+
+    long getUserCount();
+
+    UserResponse suspendUser(UUID userId);
+
+    UserResponse reactivateUser(UUID userId);
+
+    void deleteUser(UUID userId);
 }
-
-

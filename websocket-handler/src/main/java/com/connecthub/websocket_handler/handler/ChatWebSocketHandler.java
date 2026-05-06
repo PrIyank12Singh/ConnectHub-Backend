@@ -1,7 +1,6 @@
 package com.connecthub.websocket_handler.handler;
 
 import com.connecthub.websocket_handler.client.MessageServiceClient;
-import com.connecthub.websocket_handler.client.NotificationServiceClient;
 import com.connecthub.websocket_handler.client.PresenceServiceClient;
 import com.connecthub.websocket_handler.payload.ChatPayload;
 import com.connecthub.websocket_handler.payload.MessageType;
@@ -61,7 +60,6 @@ public class ChatWebSocketHandler {
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageServiceClient messageClient;
     private final PresenceServiceClient presenceClient;
-    private final NotificationServiceClient notificationClient;
     private final ObjectMapper objectMapper;
     private final TaskExecutor broadcastExecutor;
 
@@ -69,12 +67,10 @@ public class ChatWebSocketHandler {
             SimpMessagingTemplate messagingTemplate,
             MessageServiceClient messageClient,
             PresenceServiceClient presenceClient,
-            NotificationServiceClient notificationClient,
             TaskExecutor broadcastExecutor) {
         this.messagingTemplate = messagingTemplate;
         this.messageClient = messageClient;
         this.presenceClient = presenceClient;
-        this.notificationClient = notificationClient;
         this.broadcastExecutor = broadcastExecutor;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.findAndRegisterModules();
@@ -93,11 +89,14 @@ public class ChatWebSocketHandler {
         sessions.put(sessionId, userId);
         userSessions.computeIfAbsent(userId, k -> ConcurrentHashMap.newKeySet()).add(sessionId);
 
-        // ── Call presence-service: set user ONLINE ──
-        presenceClient.setOnline(userId, sessionId, "WEB");
-
-        // ── Broadcast PRESENCE_UPDATE to all rooms ──
-        broadcastPresence(userId, "ONLINE", null);
+        // ── FIX #2 (continued): Run presence HTTP call async —
+        // previously this blocked the STOMP session connect thread.
+        final String fUserId = userId;
+        final String fSessionId = sessionId;
+        broadcastExecutor.execute(() -> {
+            presenceClient.setOnline(fUserId, fSessionId, "WEB");
+            broadcastPresence(fUserId, "ONLINE", null);
+        });
 
         log.info("WS CONNECT → user: {} session: {}", userId, sessionId);
     }
@@ -149,43 +148,55 @@ public class ChatWebSocketHandler {
             payload.setMediaUrl(Jsoup.clean(payload.getMediaUrl(), Safelist.basic()));
         }
 
-        Map<String, Object> saved = messageClient.sendMessage(
-                payload.getRoomId(),
-                userId,
-                payload.getContent(),
-                payload.getMessageType() != null ? payload.getMessageType() : "TEXT",
-                payload.getMediaUrl(),
-                payload.getReplyToId());
+        // ── FIX #2: Run the blocking RestTemplate call off the inbound channel thread.
+        // Previously, messageClient.sendMessage() (a synchronous HTTP call) ran
+        // directly on the STOMP inbound channel thread. Under any load, this
+        // starves the pool and triggers the "clientInboundChannel" broker errors.
+        // Move all I/O to broadcastExecutor (async thread pool) so the inbound
+        // channel thread is freed immediately after parsing the frame.
+        final String finalUserId = userId;
+        final String sanitisedContent = payload.getContent();
+        final String sanitisedMediaUrl = payload.getMediaUrl();
 
-        if (saved == null) {
-            log.error("Failed to persist message from user {}", userId);
-            return;
-        }
+        broadcastExecutor.execute(() -> {
+            Map<String, Object> saved = messageClient.sendMessage(
+                    payload.getRoomId(),
+                    finalUserId,
+                    sanitisedContent,
+                    payload.getMessageType() != null ? payload.getMessageType() : "TEXT",
+                    sanitisedMediaUrl,
+                    payload.getReplyToId());
 
-        // 2. Build outbound event
-        OutboundEvent event = OutboundEvent.builder()
-                .type(MessageType.CHAT_MESSAGE)
-                .messageId(String.valueOf(saved.get("messageId")))
-                .roomId(payload.getRoomId())
-                .senderId(userId)
-                .content(payload.getContent())
-                .messageType(payload.getMessageType() != null ? payload.getMessageType() : "TEXT")
-                .mediaUrl(payload.getMediaUrl())
-                .replyToId(payload.getReplyToId())
-                .deliveryStatus("SENT")
-                .timestamp(LocalDateTime.now())
-                .build();
+            if (saved == null) {
+                log.error("Failed to persist message from user {}", finalUserId);
+                return;
+            }
 
-        // 3. Broadcast to /topic/room/{roomId}
-        broadcastToRoom(payload.getRoomId(), event);
+            // 2. Build outbound event
+            OutboundEvent event = OutboundEvent.builder()
+                    .type(MessageType.CHAT_MESSAGE)
+                    .messageId(String.valueOf(saved.get("messageId")))
+                    .roomId(payload.getRoomId())
+                    .senderId(finalUserId)
+                    .content(sanitisedContent)
+                    .messageType(payload.getMessageType() != null ? payload.getMessageType() : "TEXT")
+                    .mediaUrl(sanitisedMediaUrl)
+                    .replyToId(payload.getReplyToId())
+                    .deliveryStatus("SENT")
+                    .timestamp(LocalDateTime.now())
+                    .build();
 
-        // 4. Check mentions (@username in content) and notify
-        if (payload.getContent() != null && payload.getContent().contains("@")) {
-            // Simplified: in production resolve username → userId from auth-service
-            log.info("[WS] Mention detected in message from user {}", userId);
-        }
+            // 3. Broadcast to /topic/room/{roomId}
+            messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), event);
 
-        log.info("[WS] CHAT_MESSAGE from user {} in room {}", userId, payload.getRoomId());
+            // 4. Check mentions
+            if (sanitisedContent != null && sanitisedContent.contains("@")) {
+                log.info("[WS] Mention detected in message from user {}", finalUserId);
+            }
+            log.info("[WS] CHAT_MESSAGE from user {} in room {}", finalUserId, payload.getRoomId());
+        });
+
+        // Return immediately — broadcast happens async above.
     }
 
     // =========================================================================

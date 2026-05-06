@@ -6,6 +6,7 @@ com\connecthub\auth_service\config\SecurityConfig.class
 com\connecthub\auth_service\service\MediaServiceClient$1.class
 com\connecthub\auth_service\dto\ChangePasswordRequest.class
 com\connecthub\auth_service\dto\UpdateProfileRequest.class
+com\connecthub\auth_service\exception\GlobalExceptionHandler.class
 com\connecthub\auth_service\dto\AuthResponse.class
 com\connecthub\auth_service\dto\UserResponse.class
 com\connecthub\auth_service\dto\AuthResponse$AuthResponseBuilder.class
@@ -17,6 +18,7 @@ com\connecthub\auth_service\service\AuthServiceImpl.class
 com\connecthub\auth_service\service\MediaServiceClient.class
 com\connecthub\auth_service\config\PasswordConfig.class
 com\connecthub\auth_service\model\User.class
+com\connecthub\auth_service\service\MediaServiceClient$2.class
 com\connecthub\auth_service\repository\UserRepository.class
 com\connecthub\auth_service\dto\LoginRequest.class
 com\connecthub\auth_service\security\JwtUtil.class

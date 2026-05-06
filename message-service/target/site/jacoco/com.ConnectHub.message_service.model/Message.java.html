@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Message.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">message-service</a> &gt; <a href="index.source.html" class="el_package">com.ConnectHub.message_service.model</a> &gt; <span class="el_source">Message.java</span></div><h1>Message.java</h1><pre class="source lang-java linenums">package com.ConnectHub.message_service.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+@Getter
+<span class="fc" id="L20">@Setter</span>
+@Entity
+@Table(name = &quot;messages&quot;)
+<span class="fc" id="L23">public class Message {</span>
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = &quot;message_id&quot;, nullable = false, updatable = false, length = 36)
+<span class="fc" id="L29">    private UUID messageId;</span>
+
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(nullable = false, length = 36)
+<span class="fc" id="L33">    private UUID roomId;</span>
+
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(nullable = false, length = 36)
+<span class="fc" id="L37">    private UUID senderId;</span>
+
+    @Column(columnDefinition = &quot;TEXT&quot;)
+<span class="fc" id="L40">    private String content;</span>
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+<span class="fc" id="L44">    private MessageType type;</span>
+
+    @Column(length = 1000)
+<span class="fc" id="L47">    private String mediaUrl;</span>
+
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(length = 36)
+<span class="fc" id="L51">    private UUID replyToMessageId;</span>
+
+    @Column(nullable = false)
+<span class="fc" id="L54">    private Boolean isEdited;</span>
+
+    @Column(nullable = false)
+<span class="fc" id="L57">    private Boolean isDeleted;</span>
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+<span class="fc" id="L61">    private DeliveryStatus deliveryStatus;</span>
+
+    @Column(nullable = false, updatable = false)
+<span class="fc" id="L64">    private LocalDateTime sentAt;</span>
+
+<span class="fc" id="L66">    private LocalDateTime editedAt;</span>
+
+    @PrePersist
+    public void prePersist() {
+<span class="nc" id="L70">        this.sentAt = LocalDateTime.now();</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (this.type == null) {</span>
+<span class="nc" id="L72">            this.type = MessageType.TEXT;</span>
+        }
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (this.isEdited == null) {</span>
+<span class="nc" id="L75">            this.isEdited = false;</span>
+        }
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (this.isDeleted == null) {</span>
+<span class="nc" id="L78">            this.isDeleted = false;</span>
+        }
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (this.deliveryStatus == null) {</span>
+<span class="nc" id="L81">            this.deliveryStatus = DeliveryStatus.SENT;</span>
+        }
+<span class="nc" id="L83">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

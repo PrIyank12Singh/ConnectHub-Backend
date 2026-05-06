@@ -7,6 +7,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import java.util.Map;
 
 /**
  * Listens to Spring's STOMP session lifecycle events.
@@ -32,11 +33,14 @@ public class SessionEventListener {
     public void handleSessionConnected(SessionConnectedEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = accessor.getSessionId();
+        Map<String, Object> attrs = accessor.getSessionAttributes();
 
         // userId was stored in session attributes by WebSocketConfig JWT interceptor
-        Object userIdObj = accessor.getSessionAttributes() != null
-                ? accessor.getSessionAttributes().get("userId")
-                : null;
+        if (attrs == null) {
+            return;
+        }
+
+        Object userIdObj = attrs.get("userId");
 
         if (sessionId != null && userIdObj != null) {
             String userId = userIdObj.toString();

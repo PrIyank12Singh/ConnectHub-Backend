@@ -16,6 +16,7 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,8 +25,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -122,6 +123,34 @@ public class AuthResource {
         return ResponseEntity.ok(authService.updateStatus(userId, status));
     }
 
+    // ─── Admin ───────────────────────────────────────────────────────────────
+
+    @GetMapping("/admin/users")
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        return ResponseEntity.ok(authService.getAllUsers());
+    }
+
+    @GetMapping("/admin/users/count")
+    public ResponseEntity<Map<String, Long>> getUserCount() {
+        return ResponseEntity.ok(Map.of("count", authService.getUserCount()));
+    }
+
+    @PutMapping("/admin/users/{userId}/suspend")
+    public ResponseEntity<UserResponse> suspendUser(@PathVariable UUID userId) {
+        return ResponseEntity.ok(authService.suspendUser(userId));
+    }
+
+    @PutMapping("/admin/users/{userId}/reactivate")
+    public ResponseEntity<UserResponse> reactivateUser(@PathVariable UUID userId) {
+        return ResponseEntity.ok(authService.reactivateUser(userId));
+    }
+
+    @DeleteMapping("/admin/users/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+        authService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
     // ─── Helper ──────────────────────────────────────────────────────────────
 
     private String extractToken(String authHeader) {
@@ -130,5 +159,3 @@ public class AuthResource {
         return authHeader;
     }
 }
-
-

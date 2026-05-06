@@ -18,6 +18,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import java.util.Map;
 
 /**
  * Configures the STOMP message broker.
@@ -112,8 +113,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         String token = authHeader.substring(7);
                         if (jwtUtil.isValid(token)) {
                             String userId = jwtUtil.extractUserId(token);
-                            // Store userId in session attributes for later use in handler
-                            accessor.getSessionAttributes().put("userId", userId);
+                            Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+                            if (sessionAttributes == null) {
+                                return message;
+                            }
+                            sessionAttributes.put("userId", userId);
                         } else {
                             throw new IllegalArgumentException("Invalid JWT on STOMP CONNECT");
                         }

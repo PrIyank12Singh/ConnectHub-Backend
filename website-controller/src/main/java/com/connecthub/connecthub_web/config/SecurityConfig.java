@@ -63,7 +63,7 @@ public class SecurityConfig {
                     "/actuator/health",
                     "/error"
                 ).permitAll()
-                .requestMatchers("/web/admin/**").hasRole("ADMIN")
+                .requestMatchers("/web/admin/**").hasRole("PLATFORM_ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -1,6 +1,7 @@
 package com.connecthub.media_service.service;
 
 import com.connecthub.media_service.dto.MediaResponse;
+import com.connecthub.media_service.exception.MediaUploadException;
 import com.connecthub.media_service.model.MediaFile;
 import com.connecthub.media_service.model.MediaType;
 import com.connecthub.media_service.repository.MediaRepository;
@@ -47,6 +48,8 @@ public class MediaServiceImpl implements MediaService {
             "text/plain"
     );
 
+        private static final String THUMBNAILS = "thumbnails";
+
     public MediaServiceImpl(MediaRepository mediaRepository) {
         this.mediaRepository = mediaRepository;
     }
@@ -55,9 +58,9 @@ public class MediaServiceImpl implements MediaService {
     public void init() {
         try {
             Files.createDirectories(Paths.get(uploadDir));
-            Files.createDirectories(Paths.get(uploadDir, "thumbnails"));
+            Files.createDirectories(Paths.get(uploadDir, THUMBNAILS));
         } catch (IOException e) {
-            throw new RuntimeException("Could not create upload directories", e);
+            throw new MediaUploadException("Could not create upload directories", e);
         }
     }
 
@@ -122,12 +125,12 @@ public class MediaServiceImpl implements MediaService {
     private String generateThumbnail(Path originalPath, String filename) {
         try {
             String thumbFilename = "thumb_" + filename;
-            Path thumbPath = Paths.get(uploadDir, "thumbnails", thumbFilename);
+            Path thumbPath = Paths.get(uploadDir, THUMBNAILS, thumbFilename);
             Thumbnails.of(originalPath.toFile())
                     .size(300, 300)
                     .keepAspectRatio(true)
                     .toFile(thumbPath.toFile());
-            return baseUrl + "/media/thumbnails/" + thumbFilename;
+            return baseUrl + "/media/" + THUMBNAILS + "/" + thumbFilename;
         } catch (IOException e) {
             return null;
         }
@@ -173,7 +176,7 @@ public class MediaServiceImpl implements MediaService {
         try {
             Files.deleteIfExists(Paths.get(uploadDir, mediaFile.getFilename()));
             if (mediaFile.getThumbnailUrl() != null) {
-                Files.deleteIfExists(Paths.get(uploadDir, "thumbnails", "thumb_" + mediaFile.getFilename()));
+                Files.deleteIfExists(Paths.get(uploadDir, THUMBNAILS, "thumb_" + mediaFile.getFilename()));
             }
         } catch (IOException e) {
             // log but continue
@@ -185,6 +188,12 @@ public class MediaServiceImpl implements MediaService {
     @Transactional(readOnly = true)
     public long getFileCount(UUID roomId) {
         return mediaRepository.countByRoomId(roomId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getTotalFileCount() {
+        return mediaRepository.count();
     }
 
     @Override
@@ -234,5 +243,3 @@ public class MediaServiceImpl implements MediaService {
                 .build();
     }
 }
-
-

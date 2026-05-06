@@ -59,9 +59,6 @@ public class SecurityConfig {
                 String username = URLEncoder.encode(authResponse.getUsername(),            StandardCharsets.UTF_8);
                 String email    = URLEncoder.encode(authResponse.getEmail(),               StandardCharsets.UTF_8);
                 String role     = URLEncoder.encode(authResponse.getRole().name(),         StandardCharsets.UTF_8);
-
-                // 4. Redirect to Angular /oauth-callback
-                // Matches your app.routes.ts: { path: 'oauth-callback', ... }
                 String redirectUrl = "http://localhost:4200/oauth-callback"
                         + "?token="    + token
                         + "&userId="   + userId

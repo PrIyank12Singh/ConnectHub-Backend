@@ -72,6 +72,18 @@ public class MediaResource {
         return serveFileFromPath(Paths.get(uploadDir, "thumbnails", filename));
     }
 
+    // ─── Get All Files (admin) ────────────────────────────────────────────────
+    @GetMapping("/all")
+    public ResponseEntity<List<MediaResponse>> getAllFilesAdmin() {
+        return ResponseEntity.ok(mediaService.getAllFiles());
+    }
+
+    // ─── Get Total File Count (admin) ─────────────────────────────────────────
+    @GetMapping("/count")
+    public ResponseEntity<Map<String, Long>> getTotalFileCount() {
+        return ResponseEntity.ok(Map.of("count", mediaService.getTotalFileCount()));
+    }
+
     // ─── Get File by ID ───────────────────────────────────────────────────────
     @GetMapping("/{mediaId}")
     public ResponseEntity<MediaResponse> getFileById(@PathVariable UUID mediaId) {
@@ -102,7 +114,7 @@ public class MediaResource {
         return ResponseEntity.ok(mediaService.getFilesByMessage(messageId));
     }
 
-    // ─── Get File Count ───────────────────────────────────────────────────────
+    // ─── Get File Count by Room ───────────────────────────────────────────────
     @GetMapping("/room/{roomId}/count")
     public ResponseEntity<Map<String, Object>> getFileCount(@PathVariable UUID roomId) {
         return ResponseEntity.ok(Map.of("roomId", roomId, "fileCount", mediaService.getFileCount(roomId)));
@@ -139,5 +151,3 @@ public class MediaResource {
         }
     }
 }
-
-

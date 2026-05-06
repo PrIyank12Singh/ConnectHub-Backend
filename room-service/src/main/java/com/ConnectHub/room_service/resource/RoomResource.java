@@ -42,6 +42,11 @@ public class RoomResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(roomService.createRoom(request));
     }
 
+    @GetMapping
+    public ResponseEntity<List<RoomResponse>> getAllRooms() {
+        return ResponseEntity.ok(roomService.getAllRooms());
+    }
+
     @GetMapping("/{roomId}")
     public ResponseEntity<RoomResponse> getRoomById(@PathVariable UUID roomId) {
         return ResponseEntity.ok(roomService.getRoomById(roomId));

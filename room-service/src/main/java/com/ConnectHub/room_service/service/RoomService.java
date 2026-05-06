@@ -22,6 +22,8 @@ public interface RoomService {
 
     void deleteRoom(UUID roomId);
 
+    List<RoomResponse> getAllRooms();
+
     MemberResponse addMember(UUID roomId, AddMemberRequest request);
 
     void removeMember(UUID roomId, UUID userId);

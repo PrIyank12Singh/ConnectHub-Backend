@@ -30,6 +30,13 @@ import java.util.Map;
 @Slf4j
 public class ChatController {
 
+    private static final String AUTH_PROFILE = "/auth/profile/";
+    private static final String ROOMS_PATH = "/rooms/";
+    private static final String MEMBERS_PATH = "/members/";
+    private static final String MESSAGES_ROOM = "/messages/room/";
+    private static final String MESSAGES_PATH = "/messages/";
+    private static final String NOTIFICATIONS_PATH = "/notifications/";
+
     private final RestTemplate restTemplate;
     private final ServiceProperties svc;
 
@@ -63,7 +70,7 @@ public class ChatController {
     @GetMapping("/auth/profile/{userId}")
     public ResponseEntity<Object> getProfile(@PathVariable String userId,
                                              @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.GET, svc.getAuthUrl() + "/auth/profile/" + userId, null, auth);
+                            return forward(HttpMethod.GET, svc.getAuthUrl() + AUTH_PROFILE + userId, null, auth);
     }
 
     /** PUT /web/auth/profile/{userId} */
@@ -71,7 +78,7 @@ public class ChatController {
     public ResponseEntity<Object> updateProfile(@PathVariable String userId,
                                                 @RequestBody Map<String, Object> body,
                                                 @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.PUT, svc.getAuthUrl() + "/auth/profile/" + userId, body, auth);
+                            return forward(HttpMethod.PUT, svc.getAuthUrl() + AUTH_PROFILE + userId, body, auth);
     }
 
     /** PUT /web/auth/profile/{userId}/avatar */
@@ -80,7 +87,7 @@ public class ChatController {
                                                @RequestParam("file") MultipartFile file,
                                                @RequestHeader("Authorization") String auth) {
         return forwardMultipart(HttpMethod.PUT,
-                svc.getAuthUrl() + "/auth/profile/" + userId + "/avatar",
+                svc.getAuthUrl() + AUTH_PROFILE + userId + "/avatar",
                 file,
                 auth);
     }
@@ -115,21 +122,21 @@ public class ChatController {
     @PostMapping("/rooms")
     public ResponseEntity<Object> createRoom(@RequestBody Map<String, Object> body,
                                              @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.POST, svc.getRoomUrl() + "/rooms", body, auth);
+                            return forward(HttpMethod.POST, svc.getRoomUrl() + ROOMS_PATH.substring(0, ROOMS_PATH.length() - 1), body, auth);
     }
 
     /** GET /web/rooms/user/{userId} */
     @GetMapping("/rooms/user/{userId}")
     public ResponseEntity<Object> getRoomsByUser(@PathVariable String userId,
                                                  @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.GET, svc.getRoomUrl() + "/rooms/user/" + userId, null, auth);
+                            return forward(HttpMethod.GET, svc.getRoomUrl() + ROOMS_PATH + "user/" + userId, null, auth);
     }
 
     /** GET /web/rooms/{roomId} */
     @GetMapping("/rooms/{roomId}")
     public ResponseEntity<Object> getRoomById(@PathVariable String roomId,
                                               @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.GET, svc.getRoomUrl() + "/rooms/" + roomId, null, auth);
+                            return forward(HttpMethod.GET, svc.getRoomUrl() + ROOMS_PATH + roomId, null, auth);
     }
 
     /** PUT /web/rooms/{roomId} */
@@ -137,21 +144,21 @@ public class ChatController {
     public ResponseEntity<Object> updateRoom(@PathVariable String roomId,
                                              @RequestBody Map<String, Object> body,
                                              @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.PUT, svc.getRoomUrl() + "/rooms/" + roomId, body, auth);
+                            return forward(HttpMethod.PUT, svc.getRoomUrl() + ROOMS_PATH + roomId, body, auth);
     }
 
     /** DELETE /web/rooms/{roomId} */
     @DeleteMapping("/rooms/{roomId}")
     public ResponseEntity<Object> deleteRoom(@PathVariable String roomId,
                                              @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.DELETE, svc.getRoomUrl() + "/rooms/" + roomId, null, auth);
+                            return forward(HttpMethod.DELETE, svc.getRoomUrl() + ROOMS_PATH + roomId, null, auth);
     }
 
     /** GET /web/rooms/{roomId}/members */
     @GetMapping("/rooms/{roomId}/members")
     public ResponseEntity<Object> getRoomMembers(@PathVariable String roomId,
                                                  @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.GET, svc.getRoomUrl() + "/rooms/" + roomId + "/members", null, auth);
+                            return forward(HttpMethod.GET, svc.getRoomUrl() + ROOMS_PATH + roomId + MEMBERS_PATH, null, auth);
     }
 
     /** POST /web/rooms/{roomId}/members */
@@ -159,7 +166,7 @@ public class ChatController {
     public ResponseEntity<Object> addMember(@PathVariable String roomId,
                                             @RequestBody Map<String, Object> body,
                                             @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.POST, svc.getRoomUrl() + "/rooms/" + roomId + "/members", body, auth);
+                            return forward(HttpMethod.POST, svc.getRoomUrl() + ROOMS_PATH + roomId + MEMBERS_PATH, body, auth);
     }
 
     /** DELETE /web/rooms/{roomId}/members/{userId} */
@@ -168,7 +175,7 @@ public class ChatController {
                                                @PathVariable String userId,
                                                @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.DELETE,
-                svc.getRoomUrl() + "/rooms/" + roomId + "/members/" + userId, null, auth);
+                                svc.getRoomUrl() + ROOMS_PATH + roomId + MEMBERS_PATH + userId, null, auth);
     }
 
     /** PUT /web/rooms/{roomId}/members/{userId}/role?role=ADMIN */
@@ -178,7 +185,7 @@ public class ChatController {
                                                    @RequestParam String role,
                                                    @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.PUT,
-                svc.getRoomUrl() + "/rooms/" + roomId + "/members/" + userId + "/role?role=" + role,
+                                svc.getRoomUrl() + ROOMS_PATH + roomId + MEMBERS_PATH + userId + "/role?role=" + role,
                 null, auth);
     }
 
@@ -189,7 +196,7 @@ public class ChatController {
                                              @RequestParam boolean mute,
                                              @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.PUT,
-                svc.getRoomUrl() + "/rooms/" + roomId + "/members/" + userId + "/mute?mute=" + mute,
+                                svc.getRoomUrl() + ROOMS_PATH + roomId + MEMBERS_PATH + userId + "/mute?mute=" + mute,
                 null, auth);
     }
 
@@ -199,7 +206,7 @@ public class ChatController {
                                                  @PathVariable String userId,
                                                  @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.PUT,
-                svc.getRoomUrl() + "/rooms/" + roomId + "/members/" + userId + "/read",
+                                svc.getRoomUrl() + ROOMS_PATH + roomId + MEMBERS_PATH + userId + "/read",
                 null, auth);
     }
 
@@ -209,7 +216,7 @@ public class ChatController {
                                                  @PathVariable String userId,
                                                  @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.GET,
-                svc.getRoomUrl() + "/rooms/" + roomId + "/unread/" + userId, null, auth);
+                                svc.getRoomUrl() + ROOMS_PATH + roomId + "/unread/" + userId, null, auth);
     }
 
     // ─── Messages ────────────────────────────────────────────────────────────
@@ -228,7 +235,7 @@ public class ChatController {
                                                     @RequestParam(defaultValue = "20") int size,
                                                     @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.GET,
-                svc.getMessageUrl() + "/messages/room/" + roomId + "?page=" + page + "&size=" + size,
+                svc.getMessageUrl() + MESSAGES_ROOM + roomId + "?page=" + page + "&size=" + size,
                 null, auth);
     }
 
@@ -236,7 +243,7 @@ public class ChatController {
     @GetMapping("/messages/{messageId}")
     public ResponseEntity<Object> getMessageById(@PathVariable String messageId,
                                                  @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.GET, svc.getMessageUrl() + "/messages/" + messageId, null, auth);
+        return forward(HttpMethod.GET, svc.getMessageUrl() + MESSAGES_PATH + messageId, null, auth);
     }
 
     /** PUT /web/messages/{messageId} */
@@ -244,14 +251,14 @@ public class ChatController {
     public ResponseEntity<Object> editMessage(@PathVariable String messageId,
                                               @RequestBody Map<String, Object> body,
                                               @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.PUT, svc.getMessageUrl() + "/messages/" + messageId, body, auth);
+        return forward(HttpMethod.PUT, svc.getMessageUrl() + MESSAGES_PATH + messageId, body, auth);
     }
 
     /** DELETE /web/messages/{messageId} */
     @DeleteMapping("/messages/{messageId}")
     public ResponseEntity<Object> deleteMessage(@PathVariable String messageId,
                                                 @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.DELETE, svc.getMessageUrl() + "/messages/" + messageId, null, auth);
+        return forward(HttpMethod.DELETE, svc.getMessageUrl() + MESSAGES_PATH + messageId, null, auth);
     }
 
     /** GET /web/messages/room/{roomId}/search?keyword=hello */
@@ -260,7 +267,7 @@ public class ChatController {
                                                  @RequestParam String keyword,
                                                  @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.GET,
-                svc.getMessageUrl() + "/messages/room/" + roomId + "/search?keyword=" + keyword,
+                svc.getMessageUrl() + MESSAGES_ROOM + roomId + "/search?keyword=" + keyword,
                 null, auth);
     }
 
@@ -270,7 +277,7 @@ public class ChatController {
                                                        @RequestParam String status,
                                                        @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.PUT,
-                svc.getMessageUrl() + "/messages/" + messageId + "/status?status=" + status,
+                svc.getMessageUrl() + MESSAGES_PATH + messageId + "/status?status=" + status,
                 null, auth);
     }
 
@@ -279,7 +286,7 @@ public class ChatController {
     public ResponseEntity<Object> getMessageCount(@PathVariable String roomId,
                                                   @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.GET,
-                svc.getMessageUrl() + "/messages/room/" + roomId + "/count", null, auth);
+                svc.getMessageUrl() + MESSAGES_ROOM + roomId + "/count", null, auth);
     }
 
     // ─── Presence ────────────────────────────────────────────────────────────

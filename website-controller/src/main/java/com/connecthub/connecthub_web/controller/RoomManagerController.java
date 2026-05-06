@@ -23,6 +23,9 @@ import java.util.Map;
 @Slf4j
 public class RoomManagerController {
 
+    private static final String ROOMS_PATH = "/rooms/";
+    private static final String MEMBERS_PATH = "/members/";
+
     private final RestTemplate restTemplate;
     private final ServiceProperties svc;
 
@@ -32,14 +35,14 @@ public class RoomManagerController {
     @GetMapping("/rooms/user/{userId}")
     public ResponseEntity<Object> getMyRooms(@PathVariable String userId,
                                              @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.GET, svc.getRoomUrl() + "/rooms/user/" + userId, null, auth);
+                            return forward(HttpMethod.GET, svc.getRoomUrl() + ROOMS_PATH + "user/" + userId, null, auth);
     }
 
     /** GET /web/room-manager/rooms/{roomId}/settings */
     @GetMapping("/rooms/{roomId}/settings")
     public ResponseEntity<Object> getRoomSettings(@PathVariable String roomId,
                                                   @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.GET, svc.getRoomUrl() + "/rooms/" + roomId, null, auth);
+                            return forward(HttpMethod.GET, svc.getRoomUrl() + ROOMS_PATH + roomId, null, auth);
     }
 
     /** PUT /web/room-manager/rooms/{roomId}  — update name, description, avatar */
@@ -47,14 +50,14 @@ public class RoomManagerController {
     public ResponseEntity<Object> updateRoom(@PathVariable String roomId,
                                              @RequestBody Map<String, Object> body,
                                              @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.PUT, svc.getRoomUrl() + "/rooms/" + roomId, body, auth);
+                            return forward(HttpMethod.PUT, svc.getRoomUrl() + ROOMS_PATH + roomId, body, auth);
     }
 
     /** DELETE /web/room-manager/rooms/{roomId}  — delete entire room */
     @DeleteMapping("/rooms/{roomId}")
     public ResponseEntity<Object> deleteRoom(@PathVariable String roomId,
                                              @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.DELETE, svc.getRoomUrl() + "/rooms/" + roomId, null, auth);
+                            return forward(HttpMethod.DELETE, svc.getRoomUrl() + ROOMS_PATH + roomId, null, auth);
     }
 
     // ─── Member Management ───────────────────────────────────────────────────
@@ -63,7 +66,7 @@ public class RoomManagerController {
     @GetMapping("/rooms/{roomId}/members")
     public ResponseEntity<Object> getRoomMembers(@PathVariable String roomId,
                                                  @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.GET, svc.getRoomUrl() + "/rooms/" + roomId + "/members", null, auth);
+                            return forward(HttpMethod.GET, svc.getRoomUrl() + ROOMS_PATH + roomId + MEMBERS_PATH, null, auth);
     }
 
     /** POST /web/room-manager/rooms/{roomId}/members  — add member */
@@ -71,7 +74,7 @@ public class RoomManagerController {
     public ResponseEntity<Object> addMember(@PathVariable String roomId,
                                             @RequestBody Map<String, Object> body,
                                             @RequestHeader("Authorization") String auth) {
-        return forward(HttpMethod.POST, svc.getRoomUrl() + "/rooms/" + roomId + "/members", body, auth);
+                            return forward(HttpMethod.POST, svc.getRoomUrl() + ROOMS_PATH + roomId + MEMBERS_PATH, body, auth);
     }
 
     /** DELETE /web/room-manager/rooms/{roomId}/members/{userId}  — remove member */
@@ -80,7 +83,7 @@ public class RoomManagerController {
                                                @PathVariable String userId,
                                                @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.DELETE,
-                svc.getRoomUrl() + "/rooms/" + roomId + "/members/" + userId, null, auth);
+                                svc.getRoomUrl() + ROOMS_PATH + roomId + MEMBERS_PATH + userId, null, auth);
     }
 
     /** PUT /web/room-manager/rooms/{roomId}/members/{userId}/role?role=ADMIN */
@@ -90,7 +93,7 @@ public class RoomManagerController {
                                              @RequestParam String role,
                                              @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.PUT,
-                svc.getRoomUrl() + "/rooms/" + roomId + "/members/" + userId + "/role?role=" + role,
+                                svc.getRoomUrl() + ROOMS_PATH + roomId + MEMBERS_PATH + userId + "/role?role=" + role,
                 null, auth);
     }
 
@@ -101,7 +104,7 @@ public class RoomManagerController {
                                              @RequestParam boolean mute,
                                              @RequestHeader("Authorization") String auth) {
         return forward(HttpMethod.PUT,
-                svc.getRoomUrl() + "/rooms/" + roomId + "/members/" + userId + "/mute?mute=" + mute,
+                                svc.getRoomUrl() + ROOMS_PATH + roomId + MEMBERS_PATH + userId + "/mute?mute=" + mute,
                 null, auth);
     }
 
