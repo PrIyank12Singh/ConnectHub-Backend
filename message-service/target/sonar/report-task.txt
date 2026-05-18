@@ -1,6 +1,0 @@
-projectKey=com.connecthub:message-service
-serverUrl=http://localhost:9000
-serverVersion=10.4.1.88267
-dashboardUrl=http://localhost:9000/dashboard?id=com.connecthub%3Amessage-service
-ceTaskId=d3f559a8-c7fb-48ed-a812-e6f0e570f78f
-ceTaskUrl=http://localhost:9000/api/ce/task?id=d3f559a8-c7fb-48ed-a812-e6f0e570f78f

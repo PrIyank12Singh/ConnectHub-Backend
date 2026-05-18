@@ -1,5 +1,0 @@
-GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
-api-gateway,com.connecthub.api_gateway.config,JwtUtil,40,9,0,0,12,3,5,1,5,1
-api-gateway,com.connecthub.api_gateway,ApiGatewayApplication,5,3,0,0,2,1,1,1,1,1
-api-gateway,com.connecthub.api_gateway.filter,JwtAuthFilter.Config,3,0,0,0,1,0,1,0,1,0
-api-gateway,com.connecthub.api_gateway.filter,JwtAuthFilter,98,7,6,0,20,3,7,1,4,1

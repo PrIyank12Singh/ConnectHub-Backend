@@ -1,6 +1,0 @@
-projectKey=com.connecthub:api-gateway
-serverUrl=http://localhost:9000
-serverVersion=10.4.1.88267
-dashboardUrl=http://localhost:9000/dashboard?id=com.connecthub%3Aapi-gateway
-ceTaskId=9c005cf0-7ee2-43ed-a0b3-4a2e995242e9
-ceTaskUrl=http://localhost:9000/api/ce/task?id=9c005cf0-7ee2-43ed-a0b3-4a2e995242e9
