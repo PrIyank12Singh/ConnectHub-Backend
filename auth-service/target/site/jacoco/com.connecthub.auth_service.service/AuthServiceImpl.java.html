@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">com.connecthub.auth_service.service</a> &gt; <span class="el_source">AuthServiceImpl.java</span></div><h1>AuthServiceImpl.java</h1><pre class="source lang-java linenums">package com.connecthub.auth_service.service;
+
+import com.connecthub.auth_service.dto.AuthResponse;
+import com.connecthub.auth_service.dto.ChangePasswordRequest;
+import com.connecthub.auth_service.dto.LoginRequest;
+import com.connecthub.auth_service.dto.RegisterRequest;
+import com.connecthub.auth_service.dto.UpdateProfileRequest;
+import com.connecthub.auth_service.dto.UserResponse;
+import com.connecthub.auth_service.model.AuthProvider;
+import com.connecthub.auth_service.model.User;
+import com.connecthub.auth_service.model.UserStatus;
+import com.connecthub.auth_service.repository.UserRepository;
+import com.connecthub.auth_service.security.JwtUtil;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
+
+@Service
+@Transactional
+public class AuthServiceImpl implements AuthService {
+
+    private static final String USER_NOT_FOUND = &quot;User not found&quot;;
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final MediaServiceClient mediaServiceClient;
+
+    public AuthServiceImpl(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           JwtUtil jwtUtil,
+<span class="fc" id="L38">                           MediaServiceClient mediaServiceClient) {</span>
+<span class="fc" id="L39">        this.userRepository = userRepository;</span>
+<span class="fc" id="L40">        this.passwordEncoder = passwordEncoder;</span>
+<span class="fc" id="L41">        this.jwtUtil = jwtUtil;</span>
+<span class="fc" id="L42">        this.mediaServiceClient = mediaServiceClient;</span>
+<span class="fc" id="L43">    }</span>
+
+    @Override
+    public UserResponse register(RegisterRequest request) {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (userRepository.existsByEmail(request.getEmail())) {</span>
+<span class="fc" id="L48">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Email already registered&quot;);</span>
+        }
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (userRepository.existsByUsername(request.getUsername())) {</span>
+<span class="fc" id="L51">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Username already taken&quot;);</span>
+        }
+
+<span class="fc" id="L54">        User user = new User();</span>
+<span class="fc" id="L55">        user.setUsername(request.getUsername().trim());</span>
+<span class="fc" id="L56">        user.setEmail(request.getEmail().trim().toLowerCase());</span>
+<span class="fc" id="L57">        user.setFullName(request.getFullName().trim());</span>
+<span class="fc" id="L58">        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));</span>
+<span class="fc" id="L59">        user.setProvider(AuthProvider.LOCAL);</span>
+<span class="fc" id="L60">        user.setStatus(UserStatus.ONLINE);</span>
+<span class="fc" id="L61">        user.setIsActive(true);</span>
+
+<span class="fc" id="L63">        return toUserResponse(userRepository.save(user));</span>
+    }
+
+    @Override
+    public AuthResponse login(LoginRequest request) {
+<span class="fc" id="L68">        User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())</span>
+<span class="fc" id="L69">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;Invalid credentials&quot;));</span>
+
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (!Boolean.TRUE.equals(user.getIsActive())) {</span>
+<span class="fc" id="L72">            throw new ResponseStatusException(HttpStatus.FORBIDDEN, &quot;User account is inactive&quot;);</span>
+        }
+
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {</span>
+<span class="fc" id="L76">            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;Invalid credentials&quot;);</span>
+        }
+
+<span class="fc" id="L79">        user.setStatus(UserStatus.ONLINE);</span>
+<span class="fc" id="L80">        user.setLastSeenAt(LocalDateTime.now());</span>
+<span class="fc" id="L81">        userRepository.save(user);</span>
+
+<span class="fc" id="L83">        return buildAuthResponse(user);</span>
+    }
+
+    @Override
+    public void logout(String token) {
+<span class="nc bnc" id="L88" title="All 4 branches missed.">        if (token == null || token.isBlank()) {</span>
+<span class="nc" id="L89">            return;</span>
+        }
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        if (!jwtUtil.validateToken(token)) {</span>
+<span class="nc" id="L92">            return;</span>
+        }
+
+<span class="nc" id="L95">        UUID userId = jwtUtil.extractUserId(token);</span>
+<span class="nc" id="L96">        recordLastSeen(userId);</span>
+<span class="nc" id="L97">    }</span>
+
+    @Override
+    public boolean validateToken(String token) {
+<span class="pc bpc" id="L101" title="2 of 6 branches missed.">        return token != null &amp;&amp; !token.isBlank() &amp;&amp; jwtUtil.validateToken(token);</span>
+    }
+
+    @Override
+    public AuthResponse refreshToken(String token) {
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (!validateToken(token)) {</span>
+<span class="nc" id="L107">            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;Invalid token&quot;);</span>
+        }
+
+<span class="nc" id="L110">        UUID userId = jwtUtil.extractUserId(token);</span>
+<span class="nc" id="L111">        User user = userRepository.findByUserId(userId)</span>
+<span class="nc" id="L112">            .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));</span>
+
+<span class="nc" id="L114">        return buildAuthResponse(user);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(UUID userId) {
+<span class="fc" id="L120">        User user = userRepository.findByUserId(userId)</span>
+<span class="fc" id="L121">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));</span>
+<span class="fc" id="L122">        return toUserResponse(user);</span>
+    }
+
+    @Override
+    public UserResponse updateProfile(UUID userId, UpdateProfileRequest request) {
+<span class="fc" id="L127">        User user = userRepository.findByUserId(userId)</span>
+<span class="pc" id="L128">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));</span>
+
+<span class="fc" id="L130">        user.setFullName(request.getFullName().trim());</span>
+<span class="fc" id="L131">        user.setAvatarUrl(request.getAvatarUrl());</span>
+<span class="fc" id="L132">        user.setBio(request.getBio());</span>
+
+<span class="fc" id="L134">        return toUserResponse(userRepository.save(user));</span>
+    }
+
+    @Override
+    public UserResponse updateAvatar(UUID userId, MultipartFile avatarFile) {
+<span class="nc" id="L139">        User user = userRepository.findByUserId(userId)</span>
+<span class="nc" id="L140">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));</span>
+
+<span class="nc" id="L142">        String avatarUrl = mediaServiceClient.uploadAvatar(userId, avatarFile);</span>
+<span class="nc" id="L143">        user.setAvatarUrl(avatarUrl);</span>
+
+<span class="nc" id="L145">        return toUserResponse(userRepository.save(user));</span>
+    }
+
+    @Override
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+<span class="fc" id="L150">        User user = userRepository.findByUserId(userId)</span>
+<span class="pc" id="L151">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));</span>
+
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {</span>
+<span class="fc" id="L154">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Current password is incorrect&quot;);</span>
+        }
+
+<span class="fc" id="L157">        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));</span>
+<span class="fc" id="L158">        userRepository.save(user);</span>
+<span class="fc" id="L159">    }</span>
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;UserResponse&gt; searchUsers(String username) {
+<span class="pc bpc" id="L164" title="1 of 4 branches missed.">        if (username == null || username.isBlank()) {</span>
+<span class="fc" id="L165">            return List.of();</span>
+        }
+
+<span class="fc" id="L168">        return userRepository.findByUsernameContainingIgnoreCase(username.trim())</span>
+<span class="fc" id="L169">                .stream()</span>
+<span class="fc" id="L170">                .map(this::toUserResponse)</span>
+<span class="fc" id="L171">                .toList();</span>
+    }
+
+    @Override
+    public UserResponse updateStatus(UUID userId, UserStatus status) {
+<span class="fc" id="L176">        User user = userRepository.findByUserId(userId)</span>
+<span class="pc" id="L177">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));</span>
+
+<span class="fc" id="L179">        user.setStatus(status);</span>
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        if (status == UserStatus.INVISIBLE) {</span>
+<span class="fc" id="L181">            user.setLastSeenAt(LocalDateTime.now());</span>
+        }
+
+<span class="fc" id="L184">        return toUserResponse(userRepository.save(user));</span>
+    }
+
+    @Override
+    public UserResponse recordLastSeen(UUID userId) {
+<span class="nc" id="L189">        User user = userRepository.findByUserId(userId)</span>
+<span class="nc" id="L190">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));</span>
+
+<span class="nc" id="L192">        user.setStatus(UserStatus.INVISIBLE);</span>
+<span class="nc" id="L193">        user.setLastSeenAt(LocalDateTime.now());</span>
+
+<span class="nc" id="L195">        return toUserResponse(userRepository.save(user));</span>
+    }
+
+    // ─── Admin ───────────────────────────────────────────────────────────────
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;UserResponse&gt; getAllUsers() {
+<span class="nc" id="L203">        return userRepository.findAll()</span>
+<span class="nc" id="L204">                .stream()</span>
+<span class="nc" id="L205">                .map(this::toUserResponse)</span>
+<span class="nc" id="L206">                .toList();</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getUserCount() {
+<span class="nc" id="L212">        return userRepository.count();</span>
+    }
+
+    @Override
+    public UserResponse suspendUser(UUID userId) {
+<span class="nc" id="L217">        User user = userRepository.findByUserId(userId)</span>
+<span class="nc" id="L218">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));</span>
+<span class="nc" id="L219">        user.setIsActive(false);</span>
+<span class="nc" id="L220">        user.setStatus(UserStatus.INVISIBLE);</span>
+<span class="nc" id="L221">        return toUserResponse(userRepository.save(user));</span>
+    }
+
+    @Override
+    public UserResponse reactivateUser(UUID userId) {
+<span class="nc" id="L226">        User user = userRepository.findByUserId(userId)</span>
+<span class="nc" id="L227">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));</span>
+<span class="nc" id="L228">        user.setIsActive(true);</span>
+<span class="nc" id="L229">        return toUserResponse(userRepository.save(user));</span>
+    }
+
+    @Override
+    public void deleteUser(UUID userId) {
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        if (!userRepository.findByUserId(userId).isPresent()) {</span>
+<span class="nc" id="L235">            throw new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND);</span>
+        }
+<span class="nc" id="L237">        userRepository.deleteByUserId(userId);</span>
+<span class="nc" id="L238">    }</span>
+
+    // ─── Private helpers ─────────────────────────────────────────────────────
+
+    private AuthResponse buildAuthResponse(User user) {
+<span class="fc" id="L243">        String accessToken = jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole().name());</span>
+
+<span class="fc" id="L245">        return AuthResponse.builder()</span>
+<span class="fc" id="L246">                .userId(user.getUserId())</span>
+<span class="fc" id="L247">                .username(user.getUsername())</span>
+<span class="fc" id="L248">                .email(user.getEmail())</span>
+<span class="fc" id="L249">                .role(user.getRole())</span>
+<span class="fc" id="L250">                .accessToken(accessToken)</span>
+<span class="fc" id="L251">                .tokenType(&quot;Bearer&quot;)</span>
+<span class="fc" id="L252">                .issuedAt(LocalDateTime.now())</span>
+<span class="fc" id="L253">                .build();</span>
+    }
+
+    private UserResponse toUserResponse(User user) {
+<span class="fc" id="L257">        return UserResponse.builder()</span>
+<span class="fc" id="L258">                .userId(user.getUserId())</span>
+<span class="fc" id="L259">                .username(user.getUsername())</span>
+<span class="fc" id="L260">                .email(user.getEmail())</span>
+<span class="fc" id="L261">                .fullName(user.getFullName())</span>
+<span class="fc" id="L262">                .avatarUrl(user.getAvatarUrl())</span>
+<span class="fc" id="L263">                .bio(user.getBio())</span>
+<span class="fc" id="L264">                .status(user.getStatus())</span>
+<span class="fc" id="L265">                .provider(user.getProvider())</span>
+<span class="fc" id="L266">                .role(user.getRole())</span>
+<span class="fc" id="L267">                .isActive(user.getIsActive())</span>
+<span class="fc" id="L268">                .lastSeenAt(user.getLastSeenAt())</span>
+<span class="fc" id="L269">                .createdAt(user.getCreatedAt())</span>
+<span class="fc" id="L270">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">com.connecthub.auth_service.config</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package com.connecthub.auth_service.config;
+
+import com.connecthub.auth_service.dto.AuthResponse;
+import com.connecthub.auth_service.service.GoogleAuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+
+@Configuration
+public class SecurityConfig {
+
+    private final GoogleAuthService googleAuthService;
+
+<span class="nc" id="L24">    public SecurityConfig(GoogleAuthService googleAuthService) {</span>
+<span class="nc" id="L25">        this.googleAuthService = googleAuthService;</span>
+<span class="nc" id="L26">    }</span>
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+<span class="nc" id="L30">        http.csrf(AbstractHttpConfigurer::disable)</span>
+<span class="nc" id="L31">            .authorizeHttpRequests(auth -&gt; auth</span>
+<span class="nc" id="L32">                .requestMatchers(&quot;/auth/**&quot;, &quot;/error&quot;, &quot;/login/**&quot;, &quot;/oauth2/**&quot;,&quot;/v3/api-docs/**&quot;, &quot;/swagger-ui/**&quot;, &quot;/swagger-ui.html&quot;).permitAll()</span>
+<span class="nc" id="L33">                .anyRequest().authenticated())</span>
+<span class="nc" id="L34">            .oauth2Login(oauth2 -&gt; oauth2</span>
+<span class="nc" id="L35">                .successHandler(oAuth2SuccessHandler())</span>
+            );
+
+<span class="nc" id="L38">        return http.build();</span>
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler oAuth2SuccessHandler() {
+<span class="nc" id="L43">        return new AuthenticationSuccessHandler() {</span>
+            @Override
+            public void onAuthenticationSuccess(
+                    HttpServletRequest request,
+                    HttpServletResponse response,
+                    Authentication authentication) throws IOException {
+
+                // 1. Get OAuth2 user from Spring Security context
+<span class="nc" id="L51">                OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();</span>
+
+                // 2. Generate our own JWT via GoogleAuthService
+<span class="nc" id="L54">                AuthResponse authResponse = googleAuthService.handleGoogleLogin(oauthUser);</span>
+
+                // 3. URL-encode all values safely
+<span class="nc" id="L57">                String token    = URLEncoder.encode(authResponse.getAccessToken(),         StandardCharsets.UTF_8);</span>
+<span class="nc" id="L58">                String userId   = URLEncoder.encode(authResponse.getUserId().toString(),   StandardCharsets.UTF_8);</span>
+<span class="nc" id="L59">                String username = URLEncoder.encode(authResponse.getUsername(),            StandardCharsets.UTF_8);</span>
+<span class="nc" id="L60">                String email    = URLEncoder.encode(authResponse.getEmail(),               StandardCharsets.UTF_8);</span>
+<span class="nc" id="L61">                String role     = URLEncoder.encode(authResponse.getRole().name(),         StandardCharsets.UTF_8);</span>
+<span class="nc" id="L62">                String redirectUrl = &quot;http://localhost:4200/oauth-callback&quot;</span>
+                        + &quot;?token=&quot;    + token
+                        + &quot;&amp;userId=&quot;   + userId
+                        + &quot;&amp;username=&quot; + username
+                        + &quot;&amp;email=&quot;    + email
+                        + &quot;&amp;role=&quot;     + role;
+
+<span class="nc" id="L69">                response.sendRedirect(redirectUrl);</span>
+<span class="nc" id="L70">            }</span>
+        };
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

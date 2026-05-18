@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthResource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report"></a> &gt; <a href="index.source.html" class="el_package">com.connecthub.auth_service.resource</a> &gt; <span class="el_source">AuthResource.java</span></div><h1>AuthResource.java</h1><pre class="source lang-java linenums">package com.connecthub.auth_service.resource;
+
+import com.connecthub.auth_service.dto.AuthResponse;
+import com.connecthub.auth_service.dto.ChangePasswordRequest;
+import com.connecthub.auth_service.dto.LoginRequest;
+import com.connecthub.auth_service.dto.RegisterRequest;
+import com.connecthub.auth_service.dto.UpdateProfileRequest;
+import com.connecthub.auth_service.dto.UserResponse;
+import com.connecthub.auth_service.model.UserStatus;
+import com.connecthub.auth_service.service.AuthService;
+import com.connecthub.auth_service.service.GoogleAuthService;
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+@RestController
+@RequestMapping(&quot;/auth&quot;)
+public class AuthResource {
+
+    private final AuthService authService;
+    private final GoogleAuthService googleAuthService;
+
+<span class="nc" id="L39">    public AuthResource(AuthService authService, GoogleAuthService googleAuthService) {</span>
+<span class="nc" id="L40">        this.authService = authService;</span>
+<span class="nc" id="L41">        this.googleAuthService = googleAuthService;</span>
+<span class="nc" id="L42">    }</span>
+
+    // ─── Local Auth ───────────────────────────────────────────────────────────
+
+    @PostMapping(&quot;/register&quot;)
+    public ResponseEntity&lt;UserResponse&gt; register(@Valid @RequestBody RegisterRequest request) {
+<span class="nc" id="L48">        return ResponseEntity.ok(authService.register(request));</span>
+    }
+
+    @PostMapping(&quot;/login&quot;)
+    public ResponseEntity&lt;AuthResponse&gt; login(@Valid @RequestBody LoginRequest request) {
+<span class="nc" id="L53">        return ResponseEntity.ok(authService.login(request));</span>
+    }
+
+    @PostMapping(&quot;/logout&quot;)
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; logout(
+            @RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
+<span class="nc" id="L59">        authService.logout(extractToken(authHeader));</span>
+<span class="nc" id="L60">        return ResponseEntity.ok(Map.of(&quot;message&quot;, &quot;Logged out successfully&quot;));</span>
+    }
+
+    @PostMapping(&quot;/validate&quot;)
+    public ResponseEntity&lt;Map&lt;String, Boolean&gt;&gt; validate(
+            @RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
+<span class="nc" id="L66">        boolean valid = authService.validateToken(extractToken(authHeader));</span>
+<span class="nc" id="L67">        return ResponseEntity.ok(Map.of(&quot;valid&quot;, valid));</span>
+    }
+
+    @PostMapping(&quot;/refresh&quot;)
+    public ResponseEntity&lt;AuthResponse&gt; refresh(
+            @RequestHeader(&quot;Authorization&quot;) String authHeader) {
+<span class="nc" id="L73">        return ResponseEntity.ok(authService.refreshToken(extractToken(authHeader)));</span>
+    }
+
+    // ─── Google OAuth2 ────────────────────────────────────────────────────────
+
+    @GetMapping(&quot;/google/callback&quot;)
+    public ResponseEntity&lt;AuthResponse&gt; googleCallback(
+            @AuthenticationPrincipal OAuth2User oauthUser) {
+<span class="nc" id="L81">        return ResponseEntity.ok(googleAuthService.handleGoogleLogin(oauthUser));</span>
+    }
+
+    // ─── Profile &amp; User Management ───────────────────────────────────────────
+
+    @GetMapping(&quot;/profile/{userId}&quot;)
+    public ResponseEntity&lt;UserResponse&gt; getProfile(@PathVariable UUID userId) {
+<span class="nc" id="L88">        return ResponseEntity.ok(authService.getUserById(userId));</span>
+    }
+
+    @PutMapping(&quot;/profile/{userId}&quot;)
+    public ResponseEntity&lt;UserResponse&gt; updateProfile(
+            @PathVariable UUID userId,
+            @Valid @RequestBody UpdateProfileRequest request) {
+<span class="nc" id="L95">        return ResponseEntity.ok(authService.updateProfile(userId, request));</span>
+    }
+
+    @PutMapping(value = &quot;/profile/{userId}/avatar&quot;, consumes = &quot;multipart/form-data&quot;)
+    public ResponseEntity&lt;UserResponse&gt; updateAvatar(
+            @PathVariable UUID userId,
+            @RequestPart(&quot;file&quot;) MultipartFile file) {
+<span class="nc" id="L102">        return ResponseEntity.ok(authService.updateAvatar(userId, file));</span>
+    }
+
+    @PutMapping(&quot;/password/{userId}&quot;)
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; changePassword(
+            @PathVariable UUID userId,
+            @Valid @RequestBody ChangePasswordRequest request) {
+<span class="nc" id="L109">        authService.changePassword(userId, request);</span>
+<span class="nc" id="L110">        return ResponseEntity.ok(Map.of(&quot;message&quot;, &quot;Password changed successfully&quot;));</span>
+    }
+
+    @GetMapping(&quot;/search&quot;)
+    public ResponseEntity&lt;List&lt;UserResponse&gt;&gt; searchUsers(
+            @RequestParam(&quot;username&quot;) String username) {
+<span class="nc" id="L116">        return ResponseEntity.ok(authService.searchUsers(username));</span>
+    }
+
+    @PutMapping(&quot;/status/{userId}&quot;)
+    public ResponseEntity&lt;UserResponse&gt; updateStatus(
+            @PathVariable UUID userId,
+            @RequestParam UserStatus status) {
+<span class="nc" id="L123">        return ResponseEntity.ok(authService.updateStatus(userId, status));</span>
+    }
+
+    // ─── Admin ───────────────────────────────────────────────────────────────
+
+    @GetMapping(&quot;/admin/users&quot;)
+    public ResponseEntity&lt;List&lt;UserResponse&gt;&gt; getAllUsers() {
+<span class="nc" id="L130">        return ResponseEntity.ok(authService.getAllUsers());</span>
+    }
+
+    @GetMapping(&quot;/admin/users/count&quot;)
+    public ResponseEntity&lt;Map&lt;String, Long&gt;&gt; getUserCount() {
+<span class="nc" id="L135">        return ResponseEntity.ok(Map.of(&quot;count&quot;, authService.getUserCount()));</span>
+    }
+
+    @PutMapping(&quot;/admin/users/{userId}/suspend&quot;)
+    public ResponseEntity&lt;UserResponse&gt; suspendUser(@PathVariable UUID userId) {
+<span class="nc" id="L140">        return ResponseEntity.ok(authService.suspendUser(userId));</span>
+    }
+
+    @PutMapping(&quot;/admin/users/{userId}/reactivate&quot;)
+    public ResponseEntity&lt;UserResponse&gt; reactivateUser(@PathVariable UUID userId) {
+<span class="nc" id="L145">        return ResponseEntity.ok(authService.reactivateUser(userId));</span>
+    }
+
+    @DeleteMapping(&quot;/admin/users/{userId}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteUser(@PathVariable UUID userId) {
+<span class="nc" id="L150">        authService.deleteUser(userId);</span>
+<span class="nc" id="L151">        return ResponseEntity.noContent().build();</span>
+    }
+
+    // ─── Helper ──────────────────────────────────────────────────────────────
+
+    private String extractToken(String authHeader) {
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (authHeader == null) return null;</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        if (authHeader.startsWith(&quot;Bearer &quot;)) return authHeader.substring(7);</span>
+<span class="nc" id="L159">        return authHeader;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

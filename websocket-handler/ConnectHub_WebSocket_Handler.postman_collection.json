@@ -1,0 +1,174 @@
+{
+  "info": {
+    "name": "ConnectHub — WebSocket Handler",
+    "_postman_id": "connecthub-websocket-v1",
+    "description": "Test suite for the websocket-handler service (port 8087, or via Gateway port 8080).\n\nNOTE: WebSocket/STOMP frames cannot be tested via Postman REST requests.\nThis collection covers:\n  1. The REST endpoint (admin stats)\n  2. Reference payloads for each STOMP frame type\n\nFor full STOMP testing use the browser frontend or a STOMP test tool.\n\nSetup:\n  1. Start all services in order (8081 → 8087 → 8080)\n  2. Run request 0 first to get the token\n  3. Run requests in order",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "GATEWAY", "value": "http://localhost:8080" },
+    { "key": "DIRECT",  "value": "http://localhost:8087" },
+    { "key": "token",   "value": "" },
+    { "key": "userId",  "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. Auth — Login & Save Token",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{GATEWAY}}/auth/login", "host": ["{{GATEWAY}}"], "path": ["auth","login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"test@connecthub.com\",\n  \"password\": \"Password123!\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "const res = pm.response.json();",
+            "pm.collectionVariables.set('token',  res.accessToken);",
+            "pm.collectionVariables.set('userId', res.userId);",
+            "pm.test('Login OK', () => pm.response.to.have.status(200));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "1. Admin — Active WebSocket Connections  [GET /ws-stats/connections]",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/ws-stats/connections", "host": ["{{GATEWAY}}"], "path": ["ws-stats","connections"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const res = pm.response.json();",
+            "pm.test('Has activeConnections', () => pm.expect(res.activeConnections).to.be.a('number'));",
+            "console.log('Active WebSocket connections:', res.activeConnections);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "── STOMP FRAME REFERENCE ──",
+      "item": [
+        {
+          "name": "REF: STOMP CONNECT frame",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{GATEWAY}}/ws", "host": ["{{GATEWAY}}"], "path": ["ws"] },
+            "description": "WebSocket handshake — use SockJS client in browser.\n\nSTOMP CONNECT headers:\n  Authorization: Bearer <jwt_token>\n\nAfter connect, subscribe to:\n  /topic/room/{roomId}   — room events\n  /topic/user/{userId}   — personal alerts\n  /topic/presence        — presence updates"
+          }
+        },
+        {
+          "name": "REF: Send CHAT_MESSAGE  [/app/chat.send]",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "http://STOMP-ONLY", "raw": "http://STOMP-ONLY" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CHAT_MESSAGE\",\n  \"roomId\": \"your-room-uuid\",\n  \"content\": \"Hello everyone!\",\n  \"messageType\": \"TEXT\",\n  \"replyToId\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Send via STOMP to /app/chat.send\nBroadcast goes to /topic/room/{roomId}"
+          }
+        },
+        {
+          "name": "REF: Send TYPING_INDICATOR  [/app/chat.typing]",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "http://STOMP-ONLY" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"TYPING_INDICATOR\",\n  \"roomId\": \"your-room-uuid\",\n  \"isTyping\": true\n}"
+            },
+            "description": "NOT persisted. Broadcast to /topic/room/{roomId}. Client clears after 3s."
+          }
+        },
+        {
+          "name": "REF: Send READ_RECEIPT  [/app/chat.read]",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "http://STOMP-ONLY" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"READ_RECEIPT\",\n  \"roomId\": \"your-room-uuid\",\n  \"upToMessageId\": \"message-uuid\"\n}"
+            },
+            "description": "Updates delivery status to READ in message-service."
+          }
+        },
+        {
+          "name": "REF: Send REACTION  [/app/chat.react]",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "http://STOMP-ONLY" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"REACTION\",\n  \"roomId\": \"your-room-uuid\",\n  \"messageId\": \"message-uuid\",\n  \"emoji\": \"👍\"\n}"
+            }
+          }
+        },
+        {
+          "name": "REF: Send MESSAGE_EDIT  [/app/chat.edit]",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "http://STOMP-ONLY" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"MESSAGE_EDIT\",\n  \"roomId\": \"your-room-uuid\",\n  \"messageId\": \"message-uuid\",\n  \"newContent\": \"Edited message text\"\n}"
+            }
+          }
+        },
+        {
+          "name": "REF: Send MESSAGE_DELETE  [/app/chat.delete]",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "http://STOMP-ONLY" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"MESSAGE_DELETE\",\n  \"roomId\": \"your-room-uuid\",\n  \"messageId\": \"message-uuid\"\n}"
+            }
+          }
+        },
+        {
+          "name": "REF: Send PRESENCE_UPDATE  [/app/chat.status]",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "http://STOMP-ONLY" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"PRESENCE_UPDATE\",\n  \"status\": \"AWAY\",\n  \"customMessage\": \"In a meeting\"\n}"
+            },
+            "description": "Updates presence-service and broadcasts to /topic/presence"
+          }
+        },
+        {
+          "name": "REF: Send PING  [/app/chat.ping]",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "http://STOMP-ONLY" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"PING\",\n  \"sessionId\": \"web-session-uuid\"\n}"
+            },
+            "description": "Keep-alive. Sends back pong to /topic/user/{userId}. Also pings presence-service."
+          }
+        }
+      ]
+    }
+  ]
+}

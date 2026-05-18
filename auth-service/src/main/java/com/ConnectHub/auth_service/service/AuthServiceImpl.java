@@ -1,0 +1,272 @@
+package com.connecthub.auth_service.service;
+
+import com.connecthub.auth_service.dto.AuthResponse;
+import com.connecthub.auth_service.dto.ChangePasswordRequest;
+import com.connecthub.auth_service.dto.LoginRequest;
+import com.connecthub.auth_service.dto.RegisterRequest;
+import com.connecthub.auth_service.dto.UpdateProfileRequest;
+import com.connecthub.auth_service.dto.UserResponse;
+import com.connecthub.auth_service.model.AuthProvider;
+import com.connecthub.auth_service.model.User;
+import com.connecthub.auth_service.model.UserStatus;
+import com.connecthub.auth_service.repository.UserRepository;
+import com.connecthub.auth_service.security.JwtUtil;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
+
+@Service
+@Transactional
+public class AuthServiceImpl implements AuthService {
+
+    private static final String USER_NOT_FOUND = "User not found";
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final MediaServiceClient mediaServiceClient;
+
+    public AuthServiceImpl(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           JwtUtil jwtUtil,
+                           MediaServiceClient mediaServiceClient) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+        this.mediaServiceClient = mediaServiceClient;
+    }
+
+    @Override
+    public UserResponse register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+        }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken");
+        }
+
+        User user = new User();
+        user.setUsername(request.getUsername().trim());
+        user.setEmail(request.getEmail().trim().toLowerCase());
+        user.setFullName(request.getFullName().trim());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setProvider(AuthProvider.LOCAL);
+        user.setStatus(UserStatus.ONLINE);
+        user.setIsActive(true);
+
+        return toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User account is inactive");
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+        }
+
+        user.setStatus(UserStatus.ONLINE);
+        user.setLastSeenAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        return buildAuthResponse(user);
+    }
+
+    @Override
+    public void logout(String token) {
+        if (token == null || token.isBlank()) {
+            return;
+        }
+        if (!jwtUtil.validateToken(token)) {
+            return;
+        }
+
+        UUID userId = jwtUtil.extractUserId(token);
+        recordLastSeen(userId);
+    }
+
+    @Override
+    public boolean validateToken(String token) {
+        return token != null && !token.isBlank() && jwtUtil.validateToken(token);
+    }
+
+    @Override
+    public AuthResponse refreshToken(String token) {
+        if (!validateToken(token)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+        }
+
+        UUID userId = jwtUtil.extractUserId(token);
+        User user = userRepository.findByUserId(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
+
+        return buildAuthResponse(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(UUID userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
+        return toUserResponse(user);
+    }
+
+    @Override
+    public UserResponse updateProfile(UUID userId, UpdateProfileRequest request) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
+
+        user.setFullName(request.getFullName().trim());
+        user.setAvatarUrl(request.getAvatarUrl());
+        user.setBio(request.getBio());
+
+        return toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponse updateAvatar(UUID userId, MultipartFile avatarFile) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
+
+        String avatarUrl = mediaServiceClient.uploadAvatar(userId, avatarFile);
+        user.setAvatarUrl(avatarUrl);
+
+        return toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> searchUsers(String username) {
+        if (username == null || username.isBlank()) {
+            return List.of();
+        }
+
+        return userRepository.findByUsernameContainingIgnoreCase(username.trim())
+                .stream()
+                .map(this::toUserResponse)
+                .toList();
+    }
+
+    @Override
+    public UserResponse updateStatus(UUID userId, UserStatus status) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
+
+        user.setStatus(status);
+        if (status == UserStatus.INVISIBLE) {
+            user.setLastSeenAt(LocalDateTime.now());
+        }
+
+        return toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponse recordLastSeen(UUID userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
+
+        user.setStatus(UserStatus.INVISIBLE);
+        user.setLastSeenAt(LocalDateTime.now());
+
+        return toUserResponse(userRepository.save(user));
+    }
+
+    // ─── Admin ───────────────────────────────────────────────────────────────
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(this::toUserResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getUserCount() {
+        return userRepository.count();
+    }
+
+    @Override
+    public UserResponse suspendUser(UUID userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
+        user.setIsActive(false);
+        user.setStatus(UserStatus.INVISIBLE);
+        return toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponse reactivateUser(UUID userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND));
+        user.setIsActive(true);
+        return toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public void deleteUser(UUID userId) {
+        if (!userRepository.findByUserId(userId).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, USER_NOT_FOUND);
+        }
+        userRepository.deleteByUserId(userId);
+    }
+
+    // ─── Private helpers ─────────────────────────────────────────────────────
+
+    private AuthResponse buildAuthResponse(User user) {
+        String accessToken = jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole().name());
+
+        return AuthResponse.builder()
+                .userId(user.getUserId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .accessToken(accessToken)
+                .tokenType("Bearer")
+                .issuedAt(LocalDateTime.now())
+                .build();
+    }
+
+    private UserResponse toUserResponse(User user) {
+        return UserResponse.builder()
+                .userId(user.getUserId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .avatarUrl(user.getAvatarUrl())
+                .bio(user.getBio())
+                .status(user.getStatus())
+                .provider(user.getProvider())
+                .role(user.getRole())
+                .isActive(user.getIsActive())
+                .lastSeenAt(user.getLastSeenAt())
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
+}

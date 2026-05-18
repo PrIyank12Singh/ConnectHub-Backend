@@ -1,0 +1,26 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+,com.connecthub.auth_service,AuthServiceApplication,5,3,0,0,2,1,1,1,1,1
+,com.connecthub.auth_service.resource,AuthResource,148,0,4,0,28,0,21,0,19,0
+,com.connecthub.auth_service.model,UserRole,0,21,0,0,0,4,0,1,0,1
+,com.connecthub.auth_service.model,UserStatus,0,27,0,0,0,5,0,1,0,1
+,com.connecthub.auth_service.model,AuthProvider,0,21,0,0,0,4,0,1,0,1
+,com.connecthub.auth_service.model,User,41,98,8,0,15,15,7,28,3,28
+,com.connecthub.auth_service.service,MediaServiceClient.new ParameterizedTypeReference() {...},6,0,0,0,1,0,1,0,1,0
+,com.connecthub.auth_service.service,MediaServiceClient.new ByteArrayResource() {...},14,0,0,0,2,0,2,0,2,0
+,com.connecthub.auth_service.service,GoogleAuthService,145,0,4,0,40,0,5,0,3,0
+,com.connecthub.auth_service.service,AuthServiceImpl,217,351,13,19,41,82,25,21,17,13
+,com.connecthub.auth_service.service,MediaServiceClient,115,0,6,0,25,0,5,0,2,0
+,com.connecthub.auth_service.exception,GlobalExceptionHandler,103,0,0,0,21,0,8,0,8,0
+,com.connecthub.auth_service.security,JwtUtil,68,0,0,0,21,0,5,0,5,0
+,com.connecthub.auth_service.dto,LoginRequest,0,17,0,0,0,4,0,5,0,5
+,com.connecthub.auth_service.dto,RegisterRequest,0,31,0,0,0,6,0,9,0,9
+,com.connecthub.auth_service.dto,AuthResponse.AuthResponseBuilder,19,56,0,0,0,1,1,9,1,9
+,com.connecthub.auth_service.dto,UserResponse.UserResponseBuilder,32,91,0,0,0,1,1,14,1,14
+,com.connecthub.auth_service.dto,UserResponse,21,58,0,0,7,6,7,7,7,7
+,com.connecthub.auth_service.dto,ChangePasswordRequest,0,17,0,0,0,4,0,5,0,5
+,com.connecthub.auth_service.dto,AuthResponse,15,34,0,0,5,3,5,4,5,4
+,com.connecthub.auth_service.dto,UpdateProfileRequest,0,24,0,0,0,5,0,7,0,7
+,com.connecthub.auth_service.config,PasswordConfig,4,3,0,0,1,1,1,1,1,1
+,com.connecthub.auth_service.config,RestTemplateConfig,4,3,0,0,1,1,1,1,1,1
+,com.connecthub.auth_service.config,SecurityConfig,69,0,0,0,11,0,5,0,5,0
+,com.connecthub.auth_service.config,SecurityConfig.new AuthenticationSuccessHandler() {...},54,0,0,0,11,0,2,0,2,0

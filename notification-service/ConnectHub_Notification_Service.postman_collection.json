@@ -1,0 +1,372 @@
+{
+  "info": {
+    "name": "ConnectHub — Notification Service",
+    "_postman_id": "connecthub-notification-v1",
+    "description": "Full test suite for the notification-service (port 8086, or via API Gateway port 8080).\n\n**Setup:**\n1. Run schema.sql in MySQL.\n2. Start: auth (8081) → notification (8086) → api-gateway (8080).\n3. Run request 0 first — it saves the JWT token and userId automatically.\n4. Run requests 1 → 16 in order.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "GATEWAY",          "value": "http://localhost:8080" },
+    { "key": "token",            "value": "" },
+    { "key": "userId",           "value": "" },
+    { "key": "notificationId",   "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. Auth — Login & Save Token",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{GATEWAY}}/auth/login", "host": ["{{GATEWAY}}"], "path": ["auth","login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"test@connecthub.com\",\n  \"password\": \"Password123!\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "const res = pm.response.json();",
+            "pm.collectionVariables.set('token',  res.accessToken);",
+            "pm.collectionVariables.set('userId', res.userId);",
+            "pm.test('Login OK', () => pm.response.to.have.status(200));",
+            "pm.test('Token present', () => pm.expect(res.accessToken).to.be.a('string'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "1. Send NEW_MESSAGE Notification  [POST /notifications]",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/notifications", "host": ["{{GATEWAY}}"], "path": ["notifications"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipientId\": \"{{userId}}\",\n  \"actorId\": \"00000000-0000-0000-0000-000000000001\",\n  \"type\": \"NEW_MESSAGE\",\n  \"title\": \"New message from Alice\",\n  \"message\": \"Alice sent you a message in #general\",\n  \"roomId\": \"00000000-0000-0000-0000-000000000010\",\n  \"messageId\": \"00000000-0000-0000-0000-000000000020\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "const res = pm.response.json();",
+            "pm.collectionVariables.set('notificationId', res.notificationId);",
+            "pm.test('type is NEW_MESSAGE', () => pm.expect(res.type).to.eql('NEW_MESSAGE'));",
+            "pm.test('isRead is false', () => pm.expect(res.isRead).to.be.false);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "2. Send MENTION Notification  [POST /notifications]",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/notifications", "host": ["{{GATEWAY}}"], "path": ["notifications"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipientId\": \"{{userId}}\",\n  \"actorId\": \"00000000-0000-0000-0000-000000000002\",\n  \"type\": \"MENTION\",\n  \"title\": \"You were mentioned\",\n  \"message\": \"Bob mentioned you in #dev-chat\",\n  \"roomId\": \"00000000-0000-0000-0000-000000000011\",\n  \"messageId\": \"00000000-0000-0000-0000-000000000021\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.test('type is MENTION', () => pm.expect(pm.response.json().type).to.eql('MENTION'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "3. Send ROOM_INVITE Notification  [POST /notifications]",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/notifications", "host": ["{{GATEWAY}}"], "path": ["notifications"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipientId\": \"{{userId}}\",\n  \"actorId\": \"00000000-0000-0000-0000-000000000003\",\n  \"type\": \"ROOM_INVITE\",\n  \"title\": \"Room Invitation\",\n  \"message\": \"You have been invited to join #project-alpha\",\n  \"roomId\": \"00000000-0000-0000-0000-000000000012\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.test('type is ROOM_INVITE', () => pm.expect(pm.response.json().type).to.eql('ROOM_INVITE'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "4. Send SYSTEM Notification  [POST /notifications]",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/notifications", "host": ["{{GATEWAY}}"], "path": ["notifications"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipientId\": \"{{userId}}\",\n  \"type\": \"SYSTEM\",\n  \"title\": \"Platform Maintenance\",\n  \"message\": \"ConnectHub will undergo maintenance on Sunday 2 AM - 4 AM UTC\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.test('type is SYSTEM', () => pm.expect(pm.response.json().type).to.eql('SYSTEM'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "5. Get All By Recipient  [GET /notifications/recipient/{userId}]",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/notifications/recipient/{{userId}}", "host": ["{{GATEWAY}}"], "path": ["notifications","recipient","{{userId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const arr = pm.response.json();",
+            "pm.test('Returns array', () => pm.expect(arr).to.be.an('array'));",
+            "pm.test('Has at least 4 notifications', () => pm.expect(arr.length).to.be.at.least(4));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "6. Get Unread Count  [GET /notifications/recipient/{userId}/unread-count]",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/notifications/recipient/{{userId}}/unread-count", "host": ["{{GATEWAY}}"], "path": ["notifications","recipient","{{userId}}","unread-count"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('unreadCount >= 4', () => pm.expect(pm.response.json().unreadCount).to.be.at.least(4));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "7. Send Bulk Notifications  [POST /notifications/bulk]",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/notifications/bulk", "host": ["{{GATEWAY}}"], "path": ["notifications","bulk"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipientIds\": [\"{{userId}}\", \"00000000-0000-0000-0000-000000000099\"],\n  \"type\": \"SYSTEM\",\n  \"title\": \"New Feature Alert\",\n  \"message\": \"File sharing is now available in all rooms!\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.test('Returns 2 notifications', () => pm.expect(pm.response.json().length).to.eql(2));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "8. Send Email Notification  [POST /notifications/email]",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/notifications/email", "host": ["{{GATEWAY}}"], "path": ["notifications","email"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"toEmail\": \"test@connecthub.com\",\n  \"subject\": \"You missed a message on ConnectHub\",\n  \"body\": \"Hi! You received a direct message while you were offline. Log in to read it.\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Email dispatched', () => pm.expect(pm.response.json().message).to.include('dispatched'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "9. Send Push Notification  [POST /notifications/push/{userId}]",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/notifications/push/{{userId}}", "host": ["{{GATEWAY}}"], "path": ["notifications","push","{{userId}}"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"New Message\",\n  \"body\": \"You have a new message in #general\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Push queued', () => pm.expect(pm.response.json().message).to.include('queued'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "10. Mark Single As Read  [PUT /notifications/{id}/read]",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/notifications/{{notificationId}}/read", "host": ["{{GATEWAY}}"], "path": ["notifications","{{notificationId}}","read"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Marked as read', () => pm.expect(pm.response.json().message).to.include('read'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "11. Get Unread Count After Mark One Read (should decrease by 1)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/notifications/recipient/{{userId}}/unread-count", "host": ["{{GATEWAY}}"], "path": ["notifications","recipient","{{userId}}","unread-count"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('unreadCount is a number', () => pm.expect(pm.response.json().unreadCount).to.be.a('number'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "12. Mark All Read  [PUT /notifications/recipient/{userId}/read-all]",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/notifications/recipient/{{userId}}/read-all", "host": ["{{GATEWAY}}"], "path": ["notifications","recipient","{{userId}}","read-all"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('All marked as read', () => pm.expect(pm.response.json().message).to.include('All'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "13. Get Unread Count After Mark All Read (expect 0)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/notifications/recipient/{{userId}}/unread-count", "host": ["{{GATEWAY}}"], "path": ["notifications","recipient","{{userId}}","unread-count"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('unreadCount is 0', () => pm.expect(pm.response.json().unreadCount).to.eql(0));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "14. Delete Notification  [DELETE /notifications/{id}]",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/notifications/{{notificationId}}", "host": ["{{GATEWAY}}"], "path": ["notifications","{{notificationId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Deleted message', () => pm.expect(pm.response.json().message).to.include('deleted'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "15. Get All Notifications — Admin  [GET /notifications/all]",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{GATEWAY}}/notifications/all", "host": ["{{GATEWAY}}"], "path": ["notifications","all"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "16. Send Notification — Missing Fields (expect 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{GATEWAY}}/notifications", "host": ["{{GATEWAY}}"], "path": ["notifications"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"NEW_MESSAGE\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 400 — validation error', () => pm.response.to.have.status(400));"
+          ]
+        }
+      }]
+    }
+  ]
+}
